@@ -11,16 +11,26 @@ import {
   mockSolDappSignAndSendTransactionRequest,
   mockSolDappSignTransactionRequest
 } from '../../../common/constants/mocks'
+import {
+  mockSolanaMainnetNetwork //
+} from '../../../stories/mock-data/mock-networks'
 
-// components
-import { WalletPanelStory } from '../../../stories/wrappers/wallet-panel-story-wrapper'
-import { SignTransactionPanel } from './sign-transaction-panel'
+// utils
 import {
   deserializeTransaction //
 } from '../../../utils/model-serialization-utils'
+
+// components
+import {
+  WalletPanelStory //
+} from '../../../stories/wrappers/wallet-panel-story-wrapper'
+import { SignTransactionPanel } from './sign-transaction-panel'
 import { BraveWallet } from '../../../constants/types'
+import { SignDataSteps } from '../../../common/hooks/use-sign-solana-tx-queue'
 
 export const _SignAllSolanaTxPanel = () => {
+  const [step, setStep] = React.useState(SignDataSteps.SignRisk)
+
   return (
     <WalletPanelStory
       panelStateOverride={{
@@ -41,7 +51,30 @@ export const _SignAllSolanaTxPanel = () => {
         ]
       }}
     >
-      <SignTransactionPanel signMode={'signAllTxs'} />
+      <SignTransactionPanel
+        signMode={'signAllTxs'}
+        isSigningDisabled={false}
+        network={mockSolanaMainnetNetwork}
+        onAcceptSigningRisks={function (): void | Promise<void> {
+          setStep(SignDataSteps.SignData)
+        }}
+        onCancelSign={function (): void | Promise<void> {
+          throw new Error('Function not implemented.')
+        }}
+        queueNextSignTransaction={function (): void {
+          throw new Error('Function not implemented.')
+        }}
+        onSign={function (): void | Promise<void> {
+          throw new Error('Function not implemented.')
+        }}
+        selectedQueueData={mockSolDappSignAllTransactionsRequest}
+        signStep={step}
+        txDatas={mockSolDappSignAllTransactionsRequest.txDatas.map(
+          (u) => u.solanaTxData!
+        )}
+        queueLength={1}
+        queueNumber={0}
+      />
     </WalletPanelStory>
   )
 }
@@ -51,6 +84,8 @@ _SignAllSolanaTxPanel.story = {
 }
 
 export const _SignSolanaTxPanel = () => {
+  // state
+  const [step, setStep] = React.useState(SignDataSteps.SignRisk)
   return (
     <WalletPanelStory
       panelStateOverride={{
@@ -64,7 +99,28 @@ export const _SignSolanaTxPanel = () => {
         ]
       }}
     >
-      <SignTransactionPanel signMode="signTx" />
+      <SignTransactionPanel
+        signMode='signTx'
+        isSigningDisabled={false}
+        network={mockSolanaMainnetNetwork}
+        onAcceptSigningRisks={function (): void | Promise<void> {
+          setStep(SignDataSteps.SignData)
+        }}
+        onCancelSign={function (): void | Promise<void> {
+          throw new Error('Function not implemented.')
+        }}
+        queueNextSignTransaction={function (): void {
+          throw new Error('Function not implemented.')
+        }}
+        onSign={function (): void | Promise<void> {
+          throw new Error('Function not implemented.')
+        }}
+        selectedQueueData={mockSolDappSignTransactionRequest}
+        signStep={step}
+        txDatas={[mockSolDappSignTransactionRequest.txData.solanaTxData!]}
+        queueLength={1}
+        queueNumber={0}
+      />
     </WalletPanelStory>
   )
 }

@@ -134,7 +134,7 @@ export const mockWalletState: WalletState = {
   accounts: [
     mockAccount,
     mockAccount2,
-    mockAccount3
+    mockAccount3,
   ],
   activeOrigin: {
     originSpec: 'https://app.uniswap.org',

@@ -16,6 +16,7 @@ import {
   WarningTriangleFilledIcon
 } from '../../shared/style'
 import { InlineAlertContainer } from './alert-inline.style'
+import { TextProps } from '../../../page/screens/send/shared.styles'
 
 interface Props {
   alertType: AlertType
@@ -26,6 +27,10 @@ interface Props {
   primaryButtonText?: string
   secondaryButtonText?: string
   title?: string
+  textSize?: TextProps['textSize']
+  iconAndTextGap?: string
+  padding?: string
+  minHeight?: string
 }
 
 const ICON_SIZE = { width: 16, height: 16 }
@@ -38,10 +43,19 @@ export const AlertInline: React.FC<Props> = ({
   onSecondaryClick,
   primaryButtonText,
   secondaryButtonText,
-  title
+  title,
+  textSize,
+  iconAndTextGap,
+  padding,
+  minHeight
 }) => {
   return (
-    <InlineAlertContainer alertType={alertType}>
+    <InlineAlertContainer
+      alertType={alertType}
+      gap={iconAndTextGap ?? '16px'}
+      padding={padding}
+      minHeight={minHeight}
+    >
       <Column>
         {alertType === 'danger' && (
           <WarningCircleFilledIcon style={ICON_SIZE} />
@@ -51,7 +65,7 @@ export const AlertInline: React.FC<Props> = ({
         )}
       </Column>
       <Column alignItems='center' justifyContent='center' fullHeight>
-        <Text textAlign='left' textSize='14px'>
+        <Text textAlign='left' textSize={textSize ?? '14px'}>
           {message}
         </Text>
       </Column>

@@ -28,7 +28,7 @@ export interface Props {
   updateUnapprovedTransactionNonce: (payload: any) => void
 }
 
-const AdvancedTransactionSettings = (props: Props) => {
+export const AdvancedTransactionSettings = (props: Props) => {
   const {
     onCancel,
     nonce,

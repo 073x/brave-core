@@ -4,38 +4,66 @@
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
+import { skipToken } from '@reduxjs/toolkit/query/react'
+import Alert from '@brave/leo/react/alert'
 
 // Utils
-import { reduceAddress } from '../../../utils/reduce-address'
-import Amount from '../../../utils/amount'
 import { getLocale } from '../../../../common/locale'
+import { reduceAddress } from '../../../utils/reduce-address'
 import { WalletSelectors } from '../../../common/selectors'
+import Amount from '../../../utils/amount'
 
 // Hooks
 import { usePendingTransactions } from '../../../common/hooks/use-pending-transaction'
 import { useExplorer } from '../../../common/hooks'
-import {
-  useGetAddressByteCodeQuery
-} from '../../../common/slices/api.slice'
+import { useGetAddressByteCodeQuery } from '../../../common/slices/api.slice'
 import {
   useSafeWalletSelector,
   useUnsafeWalletSelector
 } from '../../../common/hooks/use-safe-selector'
 
 // Components
+import { EditPendingTransactionGas } from './common/gas'
+import { Footer } from './common/footer'
+import { Origin } from './common/origin'
+import { Tooltip } from '../../shared/tooltip/index'
+import { TransactionQueueSteps } from './common/queue'
+import {
+  PendingTransactionNetworkFeeAndSettings //
+} from '../pending-transaction-network-fee/pending-transaction-network-fee'
 import CreateSiteOrigin from '../../shared/create-site-origin/index'
-import Tooltip from '../../shared/tooltip/index'
 import withPlaceholderIcon from '../../shared/create-placeholder-icon'
 
 // Components
-import { PanelTab, TransactionDetailBox } from '..'
-import EditAllowance from '../edit-allowance'
-import AdvancedTransactionSettingsButton from '../advanced-transaction-settings/button'
-import AdvancedTransactionSettings from '../advanced-transaction-settings'
+import {
+  AdvancedTransactionSettings //
+} from '../advanced-transaction-settings/index'
+import {
+  AdvancedTransactionSettingsButton //
+} from '../advanced-transaction-settings/button/index'
+import { EditAllowance } from '../edit-allowance/index'
 import { Erc20ApproveTransactionInfo } from './erc-twenty-transaction-info'
+import { TransactionDetailBox } from '../transaction-box/index'
 import { TransactionInfo } from './transaction-info'
+import PanelTab from '../panel-tab/index'
 
 // Styled Components
+import { Column, FullWidth, Row } from '../../shared/style'
+import { Skeleton } from '../../shared/loading-skeleton/styles'
+import {
+  TabRow,
+  Description,
+  PanelTitle,
+  AccountCircle,
+  AddressAndOrb,
+  AddressText,
+  URLText,
+  WarningBox,
+  WarningTitle,
+  LearnMoreButton,
+  WarningBoxTitleRow,
+  NetworkFeeRow
+} from '../shared-panel-styles'
 import {
   StyledWrapper,
   FromCircle,
@@ -53,36 +81,16 @@ import {
   WarningIcon,
   AssetIcon,
   ContractButton,
-  ExplorerIcon
+  ExplorerIcon,
+  RetryButton
 } from './style'
-import { Skeleton } from '../../shared/loading-skeleton/styles'
-
-import {
-  TabRow,
-  Description,
-  PanelTitle,
-  AccountCircle,
-  AddressAndOrb,
-  AddressText,
-  URLText,
-  WarningBox,
-  WarningTitle,
-  LearnMoreButton,
-  WarningBoxTitleRow
-} from '../shared-panel-styles'
-import { Column, Row } from '../../shared/style'
-
-import { Footer } from './common/footer'
-import { TransactionQueueStep } from './common/queue'
-import { Origin } from './common/origin'
-import { EditPendingTransactionGas } from './common/gas'
 
 type confirmPanelTabs = 'transaction' | 'details'
-
 
 const AssetIconWithPlaceholder = withPlaceholderIcon(AssetIcon, { size: 'big', marginLeft: 0, marginRight: 0 })
 
 const onClickLearnMore = () => {
+  // TODO: link broken
   chrome.tabs.create({ url: 'https://support.brave.com/hc/en-us/articles/5546517853325' }, () => {
     if (chrome.runtime.lastError) {
       console.error('tabs.create failed: ' + chrome.runtime.lastError.message)
@@ -90,7 +98,15 @@ const onClickLearnMore = () => {
   })
 }
 
-export const ConfirmTransactionPanel = () => {
+/**
+ *
+ * @returns For EVM & Filecoin transactions
+ */
+export const ConfirmTransactionPanel = ({
+  retrySimulation
+}: {
+  retrySimulation?: () => void
+}) => {
   // redux
   const activeOrigin = useUnsafeWalletSelector(WalletSelectors.activeOrigin)
   const defaultFiatCurrency = useSafeWalletSelector(
@@ -122,15 +138,22 @@ export const ConfirmTransactionPanel = () => {
     onReject,
     gasFee,
     insufficientFundsError,
-    insufficientFundsForGasError
+    insufficientFundsForGasError,
+    queueNextTransaction,
+    transactionQueueNumber,
+    transactionsQueueLength
   } = usePendingTransactions()
 
   // queries
-  const { data: byteCode, isLoading } = useGetAddressByteCodeQuery({
-    address: transactionDetails?.recipient ?? '',
-    coin: transactionDetails?.coinType ?? -1,
-    chainId: transactionDetails?.chainId ?? ''
-  }, { skip: !transactionDetails })
+  const { data: byteCode, isLoading } = useGetAddressByteCodeQuery(
+    transactionDetails
+      ? {
+          address: transactionDetails.recipient ?? '',
+          coin: transactionDetails.coinType ?? -1,
+          chainId: transactionDetails.chainId ?? ''
+        }
+      : skipToken
+  )
 
   // computed
   const isContract = !isLoading && byteCode !== '0x'
@@ -140,33 +163,36 @@ export const ConfirmTransactionPanel = () => {
   const onClickViewOnBlockExplorer = useExplorer(transactionsNetwork)
 
   // state
-  const [selectedTab, setSelectedTab] = React.useState<confirmPanelTabs>('transaction')
+  const [selectedTab, setSelectedTab] =
+    React.useState<confirmPanelTabs>('transaction')
   const [isEditing, setIsEditing] = React.useState<boolean>(false)
-  const [isEditingAllowance, setIsEditingAllowance] = React.useState<boolean>(false)
-  const [showAdvancedTransactionSettings, setShowAdvancedTransactionSettings] = React.useState<boolean>(false)
+  const [isEditingAllowance, setIsEditingAllowance] =
+    React.useState<boolean>(false)
+  const [showAdvancedTransactionSettings, setShowAdvancedTransactionSettings] =
+    React.useState<boolean>(false)
 
   // methods
   const onSelectTab = (tab: confirmPanelTabs) => () => setSelectedTab(tab)
 
-  const onToggleEditGas = () => setIsEditing(prev => !prev)
+  const onToggleEditGas = () => setIsEditing((prev) => !prev)
 
-  const onToggleEditAllowance = () => setIsEditingAllowance(prev => !prev)
+  const onToggleEditAllowance = () => setIsEditingAllowance((prev) => !prev)
 
   const onToggleAdvancedTransactionSettings = () => {
-    setShowAdvancedTransactionSettings(prev => !prev)
+    setShowAdvancedTransactionSettings((prev) => !prev)
   }
 
   // render
   if (!transactionDetails || !selectedPendingTransaction) {
-    return <StyledWrapper>
-      <Skeleton width={'100%'} height={'100%'} enableAnimation />
-    </StyledWrapper>
+    return (
+      <StyledWrapper>
+        <Skeleton width={'100%'} height={'100%'} enableAnimation />
+      </StyledWrapper>
+    )
   }
 
   if (isEditing) {
-    return (
-      <EditPendingTransactionGas onCancel={onToggleEditGas} />
-    )
+    return <EditPendingTransactionGas onCancel={onToggleEditGas} />
   }
 
   if (isEditingAllowance) {
@@ -213,7 +239,11 @@ export const ConfirmTransactionPanel = () => {
           </AddressAndOrb>
         )}
 
-        <TransactionQueueStep />
+        <TransactionQueueSteps
+          queueNextTransaction={queueNextTransaction}
+          transactionQueueNumber={transactionQueueNumber}
+          transactionsQueueLength={transactionsQueueLength}
+        />
       </TopRow>
 
       {isERC20Approve ? (
@@ -288,7 +318,7 @@ export const ConfirmTransactionPanel = () => {
               <Tooltip
                 text={transactionDetails.recipient}
                 isAddress={true}
-                position="right"
+                position='right'
               >
                 <AccountNameText>
                   {reduceAddress(transactionDetails.recipient)}
@@ -324,6 +354,7 @@ export const ConfirmTransactionPanel = () => {
               )}
             </TransactionFiatAmountBig>
           )}
+          {/* TODO: icon, tooltip, locale, update link */}
           {isAssociatedTokenAccountCreation && (
             <WarningBox warningType={'warning'}>
               <WarningBoxTitleRow>
@@ -383,6 +414,23 @@ export const ConfirmTransactionPanel = () => {
           <TransactionDetailBox transactionInfo={selectedPendingTransaction} />
         )}
       </MessageBox>
+
+      <NetworkFeeRow>
+        <PendingTransactionNetworkFeeAndSettings
+          onToggleEditGas={onToggleEditGas}
+          feeDisplayMode='fiat'
+        />
+      </NetworkFeeRow>
+
+      {retrySimulation && (
+        <FullWidth>
+          <Alert mode='simple' type={'warning'}>
+            {/* TODO: locale */}
+            Transaction preview failed.{' '}
+            <RetryButton onClick={retrySimulation}>Retry</RetryButton>
+          </Alert>
+        </FullWidth>
+      )}
 
       <Footer onConfirm={onConfirm} onReject={onReject} />
     </StyledWrapper>

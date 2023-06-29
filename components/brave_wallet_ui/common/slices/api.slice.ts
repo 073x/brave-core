@@ -1467,6 +1467,7 @@ export function createWalletApi () {
               data: sortedTxs
             }
           } catch (error) {
+            console.log(error)
             return {
               error: `Unable to fetch txs for address: ${address} (${coinType})
               error: ${error?.message ?? error}`
@@ -2379,7 +2380,10 @@ export function createWalletApi () {
       >({
         queryFn: async (payload, { dispatch }, extraOptions, baseQuery) => {
           try {
-            const { ethTxManagerProxy } = baseQuery(undefined).data
+            const { data: api } = baseQuery(undefined)
+            // const api = apiProxyFetcher()
+            // const api = getAPIProxy()
+            const { ethTxManagerProxy } = api
 
             const isEIP1559 =
               payload.maxPriorityFeePerGas !== undefined &&
@@ -2446,7 +2450,9 @@ export function createWalletApi () {
           }
         },
         invalidatesTags: (res, err, arg) =>
-          err ? [TX_CACHE_TAGS.TXS_LIST] : [TX_CACHE_TAGS.ID(arg.txMetaId)]
+          err
+            ? ['UNKNOWN_ERROR']
+            : [TX_CACHE_TAGS.ID(arg.txMetaId), 'GasEstimation1559']
       }),
       updateUnapprovedTransactionSpendAllowance: mutation<
         { success: boolean },
@@ -2837,7 +2843,7 @@ export const {
   useGetHardwareAccountDiscoveryBalanceQuery,
   useGetIpfsGatewayTranslatedNftUrlQuery,
   useGetIPFSUrlFromGatewayLikeUrlQuery,
-  useGetIsTxSimulationEnabledQuery,
+  useGetIsTxSimulationOptInStatusQuery,
   useGetNetworksRegistryQuery,
   useGetNftDiscoveryEnabledStatusQuery,
   useGetNftMetadataQuery,
@@ -2872,7 +2878,7 @@ export const {
   useLazyGetGasEstimation1559Query,
   useLazyGetIpfsGatewayTranslatedNftUrlQuery,
   useLazyGetIPFSUrlFromGatewayLikeUrlQuery,
-  useLazyGetIsTxSimulationEnabledQuery,
+  useLazyGetIsTxSimulationOptInStatusQuery,
   useLazyGetNetworksRegistryQuery,
   useLazyGetNftDiscoveryEnabledStatusQuery,
   useLazyGetRewardsBalanceQuery,
@@ -2905,6 +2911,7 @@ export const {
   useSendSPLTransferMutation,
   useSendTransactionMutation,
   useSetDefaultFiatCurrencyMutation,
+  useSetIsTxSimulationOptInStatusMutation,
   useSetNetworkMutation,
   useSetNftDiscoveryEnabledMutation,
   useSetSelectedAccountMutation,

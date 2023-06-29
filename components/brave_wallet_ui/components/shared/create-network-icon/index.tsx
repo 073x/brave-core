@@ -21,9 +21,12 @@ import { getNetworkLogo } from '../../../options/asset-options'
 import { useNetworkOrb } from '../../../common/hooks/use-orb'
 
 interface Props {
-  network?: BraveWallet.NetworkInfo
+  network?: Pick<
+    BraveWallet.NetworkInfo,
+    'iconUrls' | 'chainId' | 'symbol' | 'chainName'
+  >
   marginRight?: number
-  size?: 'huge' | 'big' | 'small' | 'tiny'
+  size?: 'huge' | 'big' | 'small' | 'tiny' | 'extra-small'
 }
 
 export const CreateNetworkIcon = ({
@@ -74,7 +77,9 @@ export const CreateNetworkIcon = ({
 
   const remoteImage = React.useMemo(() => {
     if (isRemoteURL) {
-      return `chrome://image?${networkImageURL}`
+      return isStorybook
+        ? networkImageURL || ''
+        : `chrome://image?${networkImageURL}`
     }
     return ''
   }, [networkImageURL])

@@ -101,7 +101,7 @@ export const PortfolioAssetItem = ({
       isNonFungibleToken &&
         !isDataURL(token.logo)
         ? NftIcon
-        : AssetIcon,
+        : (AssetIcon as typeof NftIcon),
       { size: 'medium', marginLeft: 0, marginRight: 8 })
   }, [isNonFungibleToken, token.logo])
 

@@ -1218,6 +1218,15 @@ export const getIsTxApprovalUnlimited = (tx: TransactionInfo): boolean => {
   return false
 }
 
+export const getIsTxRevokingApproval = (tx: TransactionInfo): boolean => {
+  if (tx.txType === BraveWallet.TransactionType.ERC20Approve) {
+    const [, amount] = tx.txArgs // (address spender, uint256 amount)
+    return new Amount(amount).toNumber() <= 0
+  }
+
+  return false
+}
+
 export const isSwapTransaction = (tx: TransactionInfo) => {
   if (getTransactionToAddress(tx).toLowerCase() === SwapExchangeProxy) {
     return true

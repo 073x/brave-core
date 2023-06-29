@@ -4,40 +4,37 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import styled from 'styled-components'
+import * as leo from '@brave/leo/tokens/css'
+
 import { AlertType } from '../../../constants/types'
 
 import { LeoColors } from './leo-colors'
 
 export const InlineAlertContainer = styled.div<{
   alertType: AlertType
+  gap?: string
+  padding?: string
+  minHeight?: string
 }>`
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 16px;
+  justify-content: flex-start;
+  gap: ${(p) => p?.gap ?? '16px'};
 
   margin-top: 16px;
   margin-bottom: 16px;
-  padding: 16px;
+  padding: ${(p) => p?.padding ?? '16px'};
   width: 100%;
-  min-height: 56px;
+  min-height: ${(p) => p?.minHeight ?? '56px'};
 
   border-radius: 8px;
 
   color: ${LeoColors['light.text.primary']};
   background-color: ${({ alertType }) =>
     alertType === 'danger'
-      ? LeoColors['light.system.feedback.error.background']
+      ? leo.color.systemfeedback.errorBackground
       : alertType === 'warning'
-      ? LeoColors['light.system.feedback.warning.background']
+      ? leo.color.systemfeedback.warningBackground
       : 'unset'};
-  @media (prefers-color-scheme: dark) {
-    color: ${LeoColors['dark.text.primary']};
-    background-color: ${({ alertType }) =>
-      alertType === 'danger'
-        ? LeoColors['dark.system.feedback.error.background']
-        : alertType === 'warning'
-        ? LeoColors['dark.system.feedback.warning.background']
-        : 'unset'};
-  }
 `

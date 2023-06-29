@@ -67,6 +67,35 @@ import {
 } from '../constants/action_types'
 import { MAX_UINT256 } from '../constants/magics'
 
+export const useSelectedPendingTransaction = () => {
+  // redux
+  const selectedPendingTransactionId = useSafeUISelector(
+    UISelectors.selectedPendingTransactionId
+  )
+
+  // queries
+  const { pendingTransactions } = usePendingTransactionsQuery({
+    address: null,
+    chainId: null,
+    coinType: null
+  })
+
+  // memos
+  const selectedPendingTransaction = React.useMemo(() => {
+    if (!pendingTransactions.length) {
+      return undefined
+    }
+    return (
+      pendingTransactions.find(
+        (tx) => tx.id === selectedPendingTransactionId
+      ) ?? pendingTransactions[0]
+    )
+  }, [pendingTransactions, selectedPendingTransactionId])
+
+  // render
+  return selectedPendingTransaction
+}
+
 export const usePendingTransactions = () => {
   // redux
   const dispatch = useDispatch<ThunkDispatch<any, any, any>>()
@@ -597,7 +626,8 @@ export const usePendingTransactions = () => {
     }
   }, [transactionDetails?.recipient, transactionInfo?.txType])
 
-  return {
+  const pendingTxData = {
+    pendingTransactions,
     baseFeePerGas,
     currentTokenAllowance,
     isCurrentAllowanceUnlimited,
@@ -637,4 +667,6 @@ export const usePendingTransactions = () => {
     insufficientFundsError,
     insufficientFundsForGasError
   }
+
+  return pendingTxData
 }

@@ -37,7 +37,7 @@ export const TokenListButton = (props: Props) => {
     onClick(token)
   }, [token, onClick])
 
-  // Memeos
+  // Memos
   const AssetIconWithPlaceholder = React.useMemo(() => {
     return withPlaceholderIcon(
       AssetIcon,

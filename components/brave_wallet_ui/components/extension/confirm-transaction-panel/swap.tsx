@@ -5,6 +5,8 @@
 
 import * as React from 'react'
 import { skipToken } from '@reduxjs/toolkit/query/react'
+import Button from '@brave/leo/react/button'
+import Alert from '@brave/leo/react/alert'
 
 // Utils
 import { WalletSelectors } from '../../../common/selectors'
@@ -35,13 +37,17 @@ import {
 } from './swap.style'
 import { EditButton, NetworkText, StyledWrapper, TopRow } from './style'
 import { CreateNetworkIcon, LoadingSkeleton, withPlaceholderIcon } from '../../shared'
-import { IconsWrapper as SwapAssetIconWrapper, NetworkIconWrapper } from '../../shared/style'
+import {
+  IconsWrapper as SwapAssetIconWrapper,
+  NetworkIconWrapper,
+  Row
+} from '../../shared/style'
 import { NftIcon } from '../../shared/nft-icon/nft-icon'
 import { Origin } from './common/origin'
 import { EditPendingTransactionGas } from './common/gas'
 
 // Components
-import { TransactionQueueStep } from './common/queue'
+import { TransactionQueueSteps } from './common/queue'
 import { Footer } from './common/footer'
 import AdvancedTransactionSettings from '../advanced-transaction-settings'
 import {
@@ -54,12 +60,21 @@ import { UNKNOWN_TOKEN_COINGECKO_ID } from '../../../common/constants/magics'
 
 // Hooks
 import { usePendingTransactions } from '../../../common/hooks/use-pending-transaction'
-import { useGetNetworkQuery } from '../../../common/slices/api.slice'
+import {
+  useGetIsTxSimulationOptInStatusQuery,
+  useGetNetworkQuery,
+  useLazyGetEVMTransactionSimulationQuery
+} from '../../../common/slices/api.slice'
 import {
   useUnsafeWalletSelector //
 } from '../../../common/hooks/use-safe-selector'
+import { getCoinFromTxDataUnion } from '../../../utils/network-utils'
 
-export function ConfirmSwapTransaction () {
+interface Props {
+  simulationFailed?: boolean
+}
+
+export function ConfirmSwapTransaction ({ simulationFailed }: Props) {
   // redux
   const activeOrigin = useUnsafeWalletSelector(WalletSelectors.activeOrigin)
 
@@ -76,10 +91,13 @@ export function ConfirmSwapTransaction () {
     updateUnapprovedTransactionNonce,
     selectedPendingTransaction,
     onConfirm,
-    onReject
+    onReject,
+    queueNextTransaction,
+    transactionsQueueLength,
+    transactionQueueNumber
   } = usePendingTransactions()
 
-  // queries
+  // queries & mutations
   const { data: makerAssetNetwork } = useGetNetworkQuery(
     transactionDetails?.sellToken ?? skipToken
   )
@@ -87,6 +105,10 @@ export function ConfirmSwapTransaction () {
   const { data: takerAssetNetwork } = useGetNetworkQuery(
     transactionDetails?.buyToken ?? skipToken
   )
+
+  const { data: simulationOptInStatus } = useGetIsTxSimulationOptInStatusQuery()
+
+  const [retryTxSimulationScan] = useLazyGetEVMTransactionSimulationQuery()
 
   // computed
   const originInfo = selectedPendingTransaction?.originInfo ?? activeOrigin
@@ -122,7 +144,11 @@ export function ConfirmSwapTransaction () {
     <StyledWrapper>
       <TopRow>
         <NetworkText />
-        <TransactionQueueStep />
+        <TransactionQueueSteps
+          queueNextTransaction={queueNextTransaction}
+          transactionQueueNumber={transactionQueueNumber}
+          transactionsQueueLength={transactionsQueueLength}
+        />
       </TopRow>
 
       <HeaderTitle>{getLocale('braveWalletSwapReviewHeader')}</HeaderTitle>
@@ -179,6 +205,44 @@ export function ConfirmSwapTransaction () {
         onToggleEditGas={onToggleEditGas}
       />
 
+      {/* TODO: test + styles */}
+      {simulationFailed
+      &&
+      selectedPendingTransaction
+      &&
+      simulationOptInStatus === 'allowed'
+       ? (
+        <Row
+          alignItems='flex-start'
+          justifyContent='flex-start'
+          padding={'0px'}
+          margin={'10px 0px 0px 0px'}
+          width='100%'
+        >
+          <Alert type='warning' mode='simple'>
+            {/* TODO */}
+            Transaction check has failed.
+            <div slot='actions'>
+              <Button
+                kind='plain'
+                onClick={async () => {
+                  await retryTxSimulationScan({
+                    chainId: selectedPendingTransaction.chainId,
+                    coinType: getCoinFromTxDataUnion(
+                      selectedPendingTransaction.txDataUnion
+                    ),
+                    id: selectedPendingTransaction.id
+                  })
+                }}
+              >
+                {/* TODO: locale */}
+                Retry
+              </Button>
+            </div>
+          </Alert>
+        </Row>
+      ) : null}
+
       <Footer
         onConfirm={onConfirm}
         onReject={onReject}
@@ -205,11 +269,14 @@ function SwapAsset (props: SwapAssetProps) {
   const AssetIconWithPlaceholder = React.useMemo(() => {
     return (
       asset &&
-      withPlaceholderIcon(asset.isErc721 ? NftIcon : AssetIcon, {
-        size: 'big',
-        marginLeft: 0,
-        marginRight: 8
-      })
+      withPlaceholderIcon(
+        asset.isErc721 ? NftIcon : (AssetIcon as typeof NftIcon),
+        {
+          size: 'big',
+          marginLeft: 0,
+          marginRight: 8
+        }
+      )
     )
   }, [asset])
 

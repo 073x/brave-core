@@ -79,7 +79,12 @@ const AssetWatchlistItem = React.forwardRef<HTMLDivElement, Props>(
     }, [token, onRemoveAsset])
 
     const AssetIconWithPlaceholder = React.useMemo(() => {
-      return withPlaceholderIcon(token.isErc721 && !isDataURL(token.logo) ? NftIcon : AssetIcon, { size: 'big', marginLeft: 0, marginRight: 8 })
+      return withPlaceholderIcon(
+        token.isErc721 && !isDataURL(token.logo)
+          ? NftIcon
+          : (AssetIcon as typeof NftIcon),
+        { size: 'big', marginLeft: 0, marginRight: 8 }
+      )
     }, [token])
 
     const networkDescription = React.useMemo(() => {

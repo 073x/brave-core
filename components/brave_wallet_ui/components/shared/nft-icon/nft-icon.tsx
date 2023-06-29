@@ -103,6 +103,7 @@ export const NftIcon = (props: NftIconProps) => {
         sandbox="allow-scripts allow-same-origin"
       />
       : <NftImageIframe
+        // TODO: size props are not getting set (always 40px)
         style={iconStyles}
         onLoad={onIframeLoaded}
         ref={nftImageIframeRef}

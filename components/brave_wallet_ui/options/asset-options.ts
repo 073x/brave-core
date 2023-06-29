@@ -28,7 +28,9 @@ export const getNetworkLogo = (chainId: string, symbol: string): string => {
   if (chainId === AllNetworksOption.chainId)
     return AllNetworksOption.iconUrls[0]
 
-  if (symbol.toUpperCase() === 'SOL') return 'chrome://erc-token-images/sol.png'
+  if (symbol.toUpperCase() === 'SOL') {
+    return 'chrome://erc-token-images/sol.png'
+  }
   if (symbol.toUpperCase() === 'FIL') return 'chrome://erc-token-images/fil.png'
   if (symbol.toUpperCase() === 'ETH') return 'chrome://erc-token-images/eth.png'
   if (symbol.toUpperCase() === 'BTC') return 'chrome://erc-token-images/btc.png'

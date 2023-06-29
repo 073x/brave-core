@@ -35,14 +35,19 @@ import {
 interface Props {
   onToggleEditGas?: () => void
   onToggleAdvancedTransactionSettings?: () => void
+  feeDisplayMode?: 'fiat' | 'crypto'
+  showNetworkLogo?: boolean
 }
 
 export const PendingTransactionNetworkFeeAndSettings: React.FC<Props> = ({
   onToggleAdvancedTransactionSettings,
-  onToggleEditGas
+  onToggleEditGas,
+  feeDisplayMode = 'fiat',
+  showNetworkLogo
 }) => {
   // custom hooks
-  const { transactionDetails, transactionsNetwork } = usePendingTransactions()
+  const { transactionDetails, transactionsNetwork, gasFee } =
+    usePendingTransactions()
 
   // queries
   const { data: defaultFiatCurrency } = useGetDefaultFiatCurrencyQuery()
@@ -52,11 +57,21 @@ export const PendingTransactionNetworkFeeAndSettings: React.FC<Props> = ({
       <NetworkFeeContainer>
         <NetworkFeeTitle>{getLocale('braveWalletNetworkFees')}</NetworkFeeTitle>
         <NetworkFeeValue>
-          <CreateNetworkIcon network={transactionsNetwork} marginRight={0} />
-          {transactionDetails?.gasFeeFiat ? (
-            new Amount(transactionDetails.gasFeeFiat).formatAsFiat(
-              defaultFiatCurrency
+          {showNetworkLogo ? (
+            <CreateNetworkIcon network={transactionsNetwork} marginRight={0} />
+          ) : null}
+          {feeDisplayMode === 'fiat' ? (
+            transactionDetails?.gasFeeFiat ? (
+              new Amount(transactionDetails.gasFeeFiat).formatAsFiat(
+                defaultFiatCurrency
+              )
+            ) : (
+              <LoadingSkeleton width={38} />
             )
+          ) : transactionsNetwork ? (
+            new Amount(gasFee)
+              .divideByDecimals(transactionsNetwork.decimals)
+              .formatAsAsset(6, transactionsNetwork?.symbol)
           ) : (
             <LoadingSkeleton width={38} />
           )}

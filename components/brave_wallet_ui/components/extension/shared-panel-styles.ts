@@ -106,6 +106,16 @@ export const TabRow = styled.div`
   margin-bottom: 10px;
 `
 
+export const TabsAndContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 255px;
+`
+
+export const NetworkFeeRow = styled(TabRow)``
+
 export const DetailTextDarkBold = styled.span`
   font-family: Poppins;
   font-size: 12px;

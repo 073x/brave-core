@@ -17,6 +17,7 @@ export const TipAndChildrenWrapper = styled.div`
   align-items: center;
   justify-content: center;
   text-align: center;
+  z-index: 1000;
 `
 
 export const TipWrapper = styled.div<PositionProps>`
@@ -36,8 +37,8 @@ export const TipWrapper = styled.div<PositionProps>`
   transform: 
     translateY(${
       (p) => p.verticalPosition === 'below'
-        ? '8px'
-        : '-105%'
+        ? '0px'
+        : '-100%'
     });
 
     z-index: 100;

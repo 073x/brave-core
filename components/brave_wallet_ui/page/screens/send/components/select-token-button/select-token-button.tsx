@@ -55,11 +55,14 @@ export const SelectTokenButton = (props: Props) => {
 
   // Memos
   const AssetIconWithPlaceholder = React.useMemo(() => {
-    return withPlaceholderIcon(token?.isErc721 ? NftIcon : AssetIcon, {
-      size: 'big',
-      marginLeft: 0,
-      marginRight: 0
-    })
+    return withPlaceholderIcon(
+      token?.isErc721 ? NftIcon : (AssetIcon as typeof NftIcon),
+      {
+        size: 'big',
+        marginLeft: 0,
+        marginRight: 0
+      }
+    )
   }, [token?.isErc721])
 
   const buttonText = React.useMemo(() => {

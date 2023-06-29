@@ -4,21 +4,19 @@
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
-import { useDispatch } from 'react-redux'
-import { skipToken } from '@reduxjs/toolkit/query/react'
-
-// Actions
-import { PanelActions } from '../../../panel/actions'
 
 // Types
-import { BraveWallet } from '../../../constants/types'
+import {
+  BraveWallet,
+  SerializableSolanaTxData //
+} from '../../../constants/types'
+import { SignDataSteps } from '../../../common/hooks/use-sign-solana-tx-queue'
 
 // Utils
 import { getLocale } from '../../../../common/locale'
-import { useUnsafePanelSelector, useUnsafeWalletSelector } from '../../../common/hooks/use-safe-selector'
-import { WalletSelectors } from '../../../common/selectors'
-import { PanelSelectors } from '../../../panel/selectors'
-import { useGetNetworkQuery } from '../../../common/slices/api.slice'
+import {
+  getSolanaTransactionInstructionParamsAndType as getTypedSolTxInstruction
+} from '../../../utils/solana-instruction-utils'
 
 // Hooks
 import { useAddressOrb } from '../../../common/hooks/use-orb'
@@ -59,200 +57,100 @@ import {
 } from '../shared-panel-styles'
 
 import { DetailColumn } from '../transaction-box/style'
-import { getSolanaTransactionInstructionParamsAndType } from '../../../utils/solana-instruction-utils'
 import { Tooltip } from '../../shared'
 
-export interface Props {
+interface Props {
   signMode: 'signTx' | 'signAllTxs'
-}
-
-enum SignDataSteps {
-  SignRisk = 0,
-  SignData = 1
+  isSigningDisabled: boolean
+  network: BraveWallet.NetworkInfo
+  onAcceptSigningRisks: () => void | Promise<void>
+  onCancelSign: () => void | Promise<void>
+  queueNextSignTransaction: () => void
+  onSign: () => void | Promise<void>
+  selectedQueueData: BraveWallet.SignTransactionRequest
+    | BraveWallet.SignAllTransactionsRequest
+    | undefined
+  signStep: SignDataSteps
+  txDatas: SerializableSolanaTxData[] | BraveWallet.SolanaTxData[]
+  signingAccount?: BraveWallet.AccountInfo
+  queueLength: number
+  queueNumber: number
 }
 
 const onClickLearnMore = () => {
   window.open('https://support.brave.com/hc/en-us/articles/4409513799693', '_blank', 'noreferrer')
 }
 
-export const SignTransactionPanel = ({ signMode }: Props) => {
-  // redux
-  const dispatch = useDispatch()
-  const accounts = useUnsafeWalletSelector(WalletSelectors.accounts)
-  const signTransactionRequests = useUnsafePanelSelector(
-    PanelSelectors.signTransactionRequests
-  )
-  const signAllTransactionsRequests = useUnsafePanelSelector(
-    PanelSelectors.signAllTransactionsRequests
-  )
-  const signTransactionData =
-    signMode === 'signTx'
-      ? signTransactionRequests
-      : signAllTransactionsRequests
-
-  // queries
-  const { data: network } = useGetNetworkQuery(
-    signTransactionData[0] ?? skipToken
-  )
-
-  // state
-  const [signStep, setSignStep] = React.useState<SignDataSteps>(SignDataSteps.SignRisk)
-  const [selectedQueueData, setSelectedQueueData] = React.useState<
-    BraveWallet.SignTransactionRequest | BraveWallet.SignAllTransactionsRequest | undefined
-  >(undefined)
-
+export const SignTransactionPanel = ({
+  signMode,
+  isSigningDisabled,
+  network,
+  onAcceptSigningRisks,
+  onCancelSign,
+  onSign,
+  queueLength,
+  queueNextSignTransaction,
+  queueNumber,
+  selectedQueueData,
+  signStep,
+  signingAccount,
+  txDatas
+}: Props) => {
   // memos
   const orb = useAddressOrb(selectedQueueData?.fromAddress)
-
-  const signTransactionQueueInfo = React.useMemo(() => {
-    return {
-      queueLength: signTransactionData.length,
-      queueNumber: signTransactionData.findIndex((data) => data.id === selectedQueueData?.id) + 1
-    }
-  }, [signTransactionData, selectedQueueData])
-
-  const isDisabled = React.useMemo((): boolean =>
-    signTransactionData.findIndex((data) => data.id === selectedQueueData?.id) !== 0,
-    [signTransactionData, selectedQueueData]
-  )
-
-  const txDatas = React.useMemo(() => {
-    return (
-      (selectedQueueData as BraveWallet.SignAllTransactionsRequest)?.txDatas
-        ? (selectedQueueData as BraveWallet.SignAllTransactionsRequest)?.txDatas.map(({ solanaTxData }) => solanaTxData)
-        : [(selectedQueueData as BraveWallet.SignTransactionRequest)?.txData?.solanaTxData]
-    ).filter((data): data is BraveWallet.SolanaTxData => !!data)
-  }, [selectedQueueData])
-
-  const account = React.useMemo(() => {
-    return accounts.find(acc => acc.address === selectedQueueData?.fromAddress)
-  }, [accounts, selectedQueueData?.fromAddress])
-
-  // methods
-  const onCancel = React.useCallback(() => {
-    if (!selectedQueueData) {
-      return
-    }
-
-    if (signMode === 'signTx') {
-      dispatch(PanelActions.signTransactionProcessed({
-        approved: false,
-        id: selectedQueueData.id
-      }))
-      return
-    }
-    if (signMode === 'signAllTxs') {
-      dispatch(PanelActions.signAllTransactionsProcessed({
-        approved: false,
-        id: selectedQueueData.id
-      }))
-    }
-  }, [selectedQueueData, accounts, signMode])
-
-  const onSign = React.useCallback(() => {
-    if (!selectedQueueData) {
-      return
-    }
-    if (!account) {
-      return
-    }
-
-    const isHwAccount = account.accountId.kind === BraveWallet.AccountKind.kHardware
-    if (signMode === 'signTx') {
-      if (isHwAccount) {
-        dispatch(PanelActions.signTransactionHardware(selectedQueueData as BraveWallet.SignTransactionRequest))
-        return
-      }
-      dispatch(PanelActions.signTransactionProcessed({
-        approved: true,
-        id: selectedQueueData.id
-      }))
-      return
-    }
-    if (signMode === 'signAllTxs') {
-      if (isHwAccount) {
-        dispatch(PanelActions.signAllTransactionsHardware(selectedQueueData as BraveWallet.SignAllTransactionsRequest))
-        return
-      }
-      dispatch(PanelActions.signAllTransactionsProcessed({
-        approved: true,
-        id: selectedQueueData.id
-      }))
-    }
-  }, [selectedQueueData, accounts, signMode])
-
-  const onContinueSigning = React.useCallback(() => {
-    setSignStep(SignDataSteps.SignData)
-  }, [])
-
-  const onQueueNextSignTransaction = React.useCallback(() => {
-    if (signTransactionQueueInfo.queueNumber === signTransactionQueueInfo.queueLength) {
-      setSelectedQueueData(signTransactionData[0])
-      return
-    }
-    setSelectedQueueData(signTransactionData[signTransactionQueueInfo.queueNumber])
-  }, [signTransactionQueueInfo, signTransactionData])
-
-  // effects
-  React.useEffect(() => {
-    setSelectedQueueData(signTransactionData?.[0] || undefined)
-  }, [signTransactionData])
 
   // render
   return (
     <StyledWrapper>
-
       <TopRow>
         <NetworkText>{network?.chainName ?? ''}</NetworkText>
-        {signTransactionQueueInfo.queueLength > 1 &&
+        {queueLength > 1 && (
           <QueueStepRow>
-            <QueueStepText>{signTransactionQueueInfo.queueNumber} {getLocale('braveWalletQueueOf')} {signTransactionQueueInfo.queueLength}</QueueStepText>
-            <QueueStepButton
-              onClick={onQueueNextSignTransaction}
-            >
-              {signTransactionQueueInfo.queueNumber === signTransactionQueueInfo.queueLength
+            <QueueStepText>
+              {queueNumber} {getLocale('braveWalletQueueOf')} {queueLength}
+            </QueueStepText>
+            <QueueStepButton onClick={queueNextSignTransaction}>
+              {queueNumber === queueLength
                 ? getLocale('braveWalletQueueFirst')
-                : getLocale('braveWalletQueueNext')
-              }
+                : getLocale('braveWalletQueueNext')}
             </QueueStepButton>
           </QueueStepRow>
-        }
+        )}
       </TopRow>
 
       <AccountCircle orb={orb} />
 
-      {selectedQueueData &&
+      {selectedQueueData && (
         <URLText>
           <CreateSiteOrigin
             originSpec={selectedQueueData.originInfo.originSpec}
             eTldPlusOne={selectedQueueData.originInfo.eTldPlusOne}
           />
         </URLText>
-      }
+      )}
 
-      <Tooltip
-        text={selectedQueueData?.fromAddress || ''}
-        isAddress
-      >
-        <AccountNameText>
-          {account?.name ?? ''}
-        </AccountNameText>
+      <Tooltip text={selectedQueueData?.fromAddress || ''} isAddress>
+        <AccountNameText>{signingAccount?.name ?? ''}</AccountNameText>
       </Tooltip>
 
       <PanelTitle>{getLocale('braveWalletSignTransactionTitle')}</PanelTitle>
 
-      {signStep === SignDataSteps.SignRisk &&
+      {signStep === SignDataSteps.SignRisk && (
         <WarningBox warningType='danger'>
           <WarningTitleRow>
             <WarningIcon />
-            <WarningTitle warningType='danger'>{getLocale('braveWalletSignWarningTitle')}</WarningTitle>
+            <WarningTitle warningType='danger'>
+              {getLocale('braveWalletSignWarningTitle')}
+            </WarningTitle>
           </WarningTitleRow>
           <WarningText>{getLocale('braveWalletSignWarning')}</WarningText>
-          <LearnMoreButton onClick={onClickLearnMore}>{getLocale('braveWalletAllowAddNetworkLearnMoreButton')}</LearnMoreButton>
+          <LearnMoreButton onClick={onClickLearnMore}>
+            {getLocale('braveWalletAllowAddNetworkLearnMoreButton')}
+          </LearnMoreButton>
         </WarningBox>
-      }
+      )}
 
-      {signStep === SignDataSteps.SignData &&
+      {signStep === SignDataSteps.SignData && (
         <>
           <TabRow>
             <PanelTab
@@ -262,30 +160,42 @@ export const SignTransactionPanel = ({ signMode }: Props) => {
           </TabRow>
           <MessageBox>
             {txDatas.map(({ instructions, txType }, i) => {
-              return <DetailColumn key={`${txType}-${i}`}>
-                {instructions?.map((instruction, index) => {
-                  return <SolanaTransactionInstruction
-                    key={index}
-                    typedInstructionWithParams={getSolanaTransactionInstructionParamsAndType(instruction)}
-                  />
-                })}
-              </DetailColumn>
+              return (
+                <DetailColumn key={`${txType}-${i}`}>
+                  {instructions?.map((instruction, index) => {
+                    return (
+                      <SolanaTransactionInstruction
+                        key={index}
+                        typedInstructionWithParams={getTypedSolTxInstruction(
+                          instruction
+                        )}
+                      />
+                    )
+                  })}
+                </DetailColumn>
+              )
             })}
           </MessageBox>
         </>
-      }
+      )}
       <ButtonRow>
         <NavButton
           buttonType='secondary'
           text={getLocale('braveWalletButtonCancel')}
-          onSubmit={onCancel}
-          disabled={isDisabled}
+          onSubmit={onCancelSign}
+          disabled={isSigningDisabled}
         />
         <NavButton
           buttonType={signStep === SignDataSteps.SignData ? 'sign' : 'danger'}
-          text={signStep === SignDataSteps.SignData ? getLocale('braveWalletSignTransactionButton') : getLocale('braveWalletButtonContinue')}
-          onSubmit={signStep === SignDataSteps.SignRisk ? onContinueSigning : onSign}
-          disabled={isDisabled}
+          text={
+            signStep === SignDataSteps.SignData
+              ? getLocale('braveWalletSignTransactionButton')
+              : getLocale('braveWalletButtonContinue')
+          }
+          onSubmit={
+            signStep === SignDataSteps.SignRisk ? onAcceptSigningRisks : onSign
+          }
+          disabled={isSigningDisabled}
         />
       </ButtonRow>
     </StyledWrapper>

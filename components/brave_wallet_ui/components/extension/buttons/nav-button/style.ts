@@ -57,6 +57,7 @@ const StyledButtonCssMixin = (p: StyledButtonProps) => {
             ? p.isV2
               ? leo.color.light.text.interactive
               : p.theme.palette.blurple500
+            // ? leo.color.interaction.buttonPrimaryBackground
             : p.buttonType === 'danger'
               ? p.theme.color.errorBorder
               : 'transparent'
@@ -108,7 +109,7 @@ export const ButtonText = styled.span<{
     p.buttonType === 'secondary' ||
     p.buttonType === 'reject' ||
     p.buttonType === 'cancel'
-      ? p.theme.color.interactive07
+      ? leo.color.text.secondary
       : p.theme.palette.white
   };
 `
