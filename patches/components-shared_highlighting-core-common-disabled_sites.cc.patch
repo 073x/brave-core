@@ -1,0 +1,12 @@
+diff --git a/components/shared_highlighting/core/common/disabled_sites.cc b/components/shared_highlighting/core/common/disabled_sites.cc
+index 65ee26acb7aae22bb3b7c6f1e64f7fc2eb3e0df8..cdc9d8c53e1873c6b6b6b1fd24d1924b9021bab0 100644
+--- a/components/shared_highlighting/core/common/disabled_sites.cc
++++ b/components/shared_highlighting/core/common/disabled_sites.cc
+@@ -17,6 +17,7 @@ namespace shared_highlighting {
+ namespace {
+ 
+ bool IsAmpGenerationEnabled() {
++  if ((true)) return false;
+ #if BUILDFLAG(IS_IOS)
+   return base::FeatureList::IsEnabled(kSharedHighlightingAmp);
+ #else
