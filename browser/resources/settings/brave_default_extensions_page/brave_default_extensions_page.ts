@@ -6,6 +6,7 @@
 import './brave_extensions_manifest_v2_subpage.js';
 
 import {PrefsMixin, PrefsMixinInterface} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
+import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js'
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js'
 
@@ -17,8 +18,10 @@ import {BraveDefaultExtensionsBrowserProxyImpl} from './brave_default_extensions
 import {getTemplate} from './brave_default_extensions_page.html.js'
 
 const SettingBraveDefaultExtensionsPageElementBase =
-  WebUiListenerMixin(PrefsMixin(RouteObserverMixin(PolymerElement))) as {
-  new (): PolymerElement & WebUiListenerMixinInterface & PrefsMixinInterface
+    WebUiListenerMixin(
+        PrefsMixin(RouteObserverMixin(I18nMixin(PolymerElement)))) as {
+  new (): PolymerElement&WebUiListenerMixinInterface&PrefsMixinInterface&
+      I18nMixinInterface
 }
 
 export interface SettingBraveDefaultExtensionsPageElement {
@@ -44,8 +47,7 @@ export class SettingBraveDefaultExtensionsPageElement extends SettingBraveDefaul
 
   static get properties() {
     return {
-      showRestartToast_: Boolean,
-      widevineEnabledPref_: {
+      showRestartToast_: Boolean, widevineEnabledPref_: {
         type: Object,
         value() {
           // TODO(dbeam): this is basically only to appease PrefControlMixin.
@@ -53,11 +55,19 @@ export class SettingBraveDefaultExtensionsPageElement extends SettingBraveDefaul
           return {}
         },
       },
-      isExtensionsManifestV2FeatureEnabled_: Boolean,
-      isExtensionsManifestV2Routed_: {
-        type: Boolean,
-        value: false,
-      },
+          isExtensionsManifestV2FeatureEnabled_: Boolean,
+          isExtensionsManifestV2Routed_: {
+            type: Boolean,
+            value: false,
+          },
+          /**
+           * The text displayed in the sidebar containing the link to open the
+           * Chrome Web Store to get more extensions.
+           */
+          discoverMoreText_: {
+            type: String,
+            computed: 'computeDiscoverMoreText_()',
+          },
     }
   }
 
@@ -66,6 +76,7 @@ export class SettingBraveDefaultExtensionsPageElement extends SettingBraveDefaul
   widevineEnabledPref_: chrome.settingsPrivate.PrefObject
   isExtensionsManifestV2FeatureEnabled_: boolean
   isExtensionsManifestV2Routed_: boolean
+  private discoverMoreText_: TrustedHTML
 
   override ready() {
     super.ready()
@@ -144,6 +155,14 @@ export class SettingBraveDefaultExtensionsPageElement extends SettingBraveDefaul
 
   shouldShowRestartForMediaRouter_(value: boolean) {
     return this.browserProxy_.isMediaRouterEnabled() != value
+  }
+
+  private computeDiscoverMoreText_(): TrustedHTML {
+    return this.i18nAdvanced('sidebarDiscoverMore', {
+      tags: ['a'],
+      attrs: ['target', 'on-click'],
+      substitutions: [loadTimeData.getString('getMoreExtensionsUrl')],
+    });
   }
 }
 

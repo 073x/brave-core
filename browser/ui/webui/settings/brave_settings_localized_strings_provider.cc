@@ -73,7 +73,7 @@ const char16_t kEnableNftDiscoveryLearnMoreUrl[] =
 
 void BraveAddCommonStrings(content::WebUIDataSource* html_source,
                            Profile* profile) {
-  webui::LocalizedString localized_strings[] = {
+  static constexpr webui::LocalizedString localized_strings[] = {
     {"importExtensions", IDS_SETTINGS_IMPORT_EXTENSIONS_CHECKBOX},
     {"importPayments", IDS_SETTINGS_IMPORT_PAYMENTS_CHECKBOX},
     {"siteSettingsAutoplay", IDS_SETTINGS_SITE_SETTINGS_AUTOPLAY},
@@ -492,7 +492,7 @@ void BraveAddCommonStrings(content::WebUIDataSource* html_source,
     {"manageExtensionsLabel", IDS_SETTINGS_MANAGE_EXTENSIONS_LABEL},
     {"keyboardShortcuts", IDS_EXTENSIONS_SIDEBAR_KEYBOARD_SHORTCUTS},
     {"getMoreExtensionsLabel", IDS_BRAVE_SETTINGS_GET_MORE_EXTENSIONS_LABEL},
-    {"getMoreExtensionsSubLabel", IDS_EXTENSIONS_SIDEBAR_OPEN_CHROME_WEB_STORE},
+    {"sidebarDiscoverMore", IDS_EXTENSIONS_SIDEBAR_DISCOVER_MORE},
     {"statsUsagePingEnabledTitle", IDS_BRAVE_STATS_USAGE_PING_SETTING},
     {"statsUsagePingEnabledDesc", IDS_BRAVE_STATS_USAGE_PING_SETTING_SUBITEM},
     {"p3aEnableTitle", IDS_BRAVE_P3A_ENABLE_SETTING},
