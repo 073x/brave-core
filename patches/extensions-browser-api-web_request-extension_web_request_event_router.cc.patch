@@ -1,0 +1,14 @@
+diff --git a/extensions/browser/api/web_request/extension_web_request_event_router.cc b/extensions/browser/api/web_request/extension_web_request_event_router.cc
+index 9767632a3be15518b9d47e4f48daa7d592b3a054..9bd59d7831059a3e566786ebd7838bb686c1b44f 100644
+--- a/extensions/browser/api/web_request/extension_web_request_event_router.cc
++++ b/extensions/browser/api/web_request/extension_web_request_event_router.cc
+@@ -1064,6 +1064,9 @@ ExtensionWebRequestEventRouter::OnAuthRequired(
+     const net::AuthChallengeInfo& auth_info,
+     AuthCallback callback,
+     net::AuthCredentials* credentials) {
++  ClearSignaled(request->id, kOnBeforeSendHeaders);
++  ClearSignaled(request->id, kOnSendHeaders);
++  ClearSignaled(request->id, kOnHeadersReceived);
+   // No browser_context means that this is for authentication challenges in the
+   // system context. Skip in that case. Also skip sensitive requests.
+   if (!browser_context ||
