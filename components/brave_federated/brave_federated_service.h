@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/memory/raw_ref.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -65,7 +66,7 @@ class BraveFederatedService : public KeyedService {
   raw_ptr<PrefService> prefs_ = nullptr;
   raw_ptr<PrefService> local_state_ = nullptr;
   PrefChangeRegistrar local_state_change_registrar_;
-  const base::FilePath& browser_context_path_;
+  const raw_ref<const base::FilePath> browser_context_path_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   std::unique_ptr<OperationalPatterns> operational_patterns_;

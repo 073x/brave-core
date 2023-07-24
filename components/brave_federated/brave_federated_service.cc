@@ -58,7 +58,7 @@ void BraveFederatedService::Init() {
                           base::Unretained(this)));
 
   base::FilePath db_path(
-      browser_context_path_.AppendASCII("data_store.sqlite"));
+      browser_context_path_->AppendASCII("data_store.sqlite"));
   data_store_service_ = std::make_unique<DataStoreService>(db_path);
   data_store_service_->Init();
 
