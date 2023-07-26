@@ -515,6 +515,10 @@ void AdsServiceImpl::InitializeBatAdsCallback(const bool success) {
 }
 
 void AdsServiceImpl::ShutdownAndResetState() {
+  if (!ShouldAlwaysRunService()) {
+    return;
+  }
+
   Shutdown();
 
   VLOG(6) << "Resetting ads state";
