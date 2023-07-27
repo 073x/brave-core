@@ -1,0 +1,12 @@
+diff --git a/components/content_settings/core/common/cookie_settings_base.cc b/components/content_settings/core/common/cookie_settings_base.cc
+index a579a7a6e8b83ea4788295e0a7787ad412514811..83881d0e01e00c10cc39f121bded8ccadb8dbd66 100644
+--- a/components/content_settings/core/common/cookie_settings_base.cc
++++ b/components/content_settings/core/common/cookie_settings_base.cc
+@@ -244,6 +244,7 @@ CookieSettingsBase::GetCookieSettingInternal(
+       ShouldBlockThirdPartyCookies() &&
+       !IsThirdPartyCookiesAllowedScheme(first_party_url.scheme());
+ 
++  BRAVE_COOKIE_SETTINGS_BASE_GET_COOKIES_SETTINGS_INTERNAL
+   if (IsAllowed(setting) && !block_third) {
+     FireStorageAccessHistogram(
+         net::cookie_util::StorageAccessResult::ACCESS_ALLOWED);
