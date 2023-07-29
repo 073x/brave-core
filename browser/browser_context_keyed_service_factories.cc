@@ -32,6 +32,7 @@
 #include "brave/browser/search_engines/search_engine_tracker.h"
 #include "brave/browser/sync/brave_sync_alerts_service_factory.h"
 #include "brave/browser/url_sanitizer/url_sanitizer_service_factory.h"
+#include "brave/components/ai_chat/common/buildflags/buildflags.h"
 #include "brave/components/brave_perf_predictor/browser/named_third_party_registry_factory.h"
 #include "brave/components/brave_vpn/common/buildflags/buildflags.h"
 #include "brave/components/commander/common/buildflags/buildflags.h"
@@ -100,6 +101,11 @@
 
 #if BUILDFLAG(ENABLE_REQUEST_OTR)
 #include "brave/browser/request_otr/request_otr_service_factory.h"
+#endif
+
+#if BUILDFLAG(ENABLE_AI_CHAT)
+#include "brave/components/ai_chat/browser/ai_chat_service_factory.h"
+#include "brave/components/ai_chat/common/features.h"
 #endif
 
 namespace brave {
@@ -200,6 +206,11 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 
 #if BUILDFLAG(ENABLE_SPEEDREADER)
   speedreader::SpeedreaderServiceFactory::GetInstance();
+#endif
+#if BUILDFLAG(ENABLE_AI_CHAT)
+  if (ai_chat::features::IsAIChatEnabled()) {
+    ai_chat::AIChatServiceFactory::GetInstance();
+  }
 #endif
 }
 

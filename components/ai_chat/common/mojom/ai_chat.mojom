@@ -5,6 +5,8 @@
 
 module ai_chat.mojom;
 
+import "mojo/public/mojom/base/time.mojom";
+
 enum CharacterType {
   HUMAN,
   ASSISTANT
@@ -23,6 +25,20 @@ enum AutoGenerateQuestionsPref {
 
 struct SiteInfo {
   string title;
+};
+
+struct Conversation {
+ int64 id;
+ mojo_base.mojom.Time date;
+ string title;
+ string? page_url;
+};
+
+struct ConversationEntry {
+  int64 id;
+  mojo_base.mojom.Time date;
+  CharacterType character_type;
+  string text;
 };
 
 // Represents a single turn in a conversation.
