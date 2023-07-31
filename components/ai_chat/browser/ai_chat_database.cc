@@ -133,8 +133,8 @@ bool AIChatDatabase::AddConversationEntry(
   sql::Statement insert_conversation_entry_statement(GetDB().GetUniqueStatement(
       "INSERT INTO conversation_entry(" CONVERSATION_ENTRY_FIELDS
       ")VALUES(NULL, ?, ?, ?)"));
-  insert_conversation_entry_statement.BindTime(1,
-                                               base::Time::NowFromSystemTime());
+  insert_conversation_entry_statement.BindTimeDelta(
+      1, base::Time::Now().ToDeltaSinceWindowsEpoch());
   insert_conversation_entry_statement.BindInt(
       2, static_cast<int>(entry.character_type));
   insert_conversation_entry_statement.BindInt64(
