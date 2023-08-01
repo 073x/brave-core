@@ -7,6 +7,7 @@ import("//brave/android/android_browser_tests.gni")
 import("//brave/browser/ethereum_remote_client/buildflags/buildflags.gni")
 import("//brave/browser/metrics/buildflags/buildflags.gni")
 import("//brave/build/config.gni")
+import("//brave/components/ai_chat/common/buildflags/buildflags.gni")
 import("//brave/components/brave_vpn/common/buildflags/buildflags.gni")
 import("//brave/components/brave_wayback_machine/buildflags/buildflags.gni")
 import("//brave/components/brave_webtorrent/browser/buildflags/buildflags.gni")
@@ -560,6 +561,13 @@ test("brave_unit_tests") {
 
   if (enable_ipfs) {
     deps += [ "//brave/browser/ipfs/test:unittests" ]
+  }
+
+  if (enable_ai_chat) {
+    sources +=
+        [ "//brave/components/ai_chat/browser/ai_chat_database_unittest.cc" ]
+
+    deps += [ "//brave/components/ai_chat/browser:browser" ]
   }
 }
 
