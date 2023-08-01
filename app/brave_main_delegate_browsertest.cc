@@ -142,6 +142,7 @@ IN_PROC_BROWSER_TEST_F(BraveMainDelegateBrowserTest, DisabledFeatures) {
     &blink::features::kSpeculationRulesPrefetchFuture,
     &blink::features::kSpeculationRulesPrefetchProxy,
     &blink::features::kTextFragmentAnchor,
+    &blink::features::kWebEnvironmentIntegrity,
     &commerce::kCommerceAllowOnDemandBookmarkUpdates,
     &commerce::kCommerceDeveloper,
     &commerce::kCommerceMerchantViewer,
@@ -196,7 +197,6 @@ IN_PROC_BROWSER_TEST_F(BraveMainDelegateBrowserTest, DisabledFeatures) {
 #if BUILDFLAG(IS_MAC)
     &features::kUseChromiumUpdater,
 #endif
-    &features::kWebEnvironmentIntegrity,
     &features::kWebOTP,
     &history::kOrganicRepeatableQueries,
     &history::kSyncSegmentsData,
