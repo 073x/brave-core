@@ -279,8 +279,8 @@ export interface PanelState {
   signMessageData: BraveWallet.SignMessageRequest[]
   signTransactionRequests: BraveWallet.SignTransactionRequest[]
   signAllTransactionsRequests: BraveWallet.SignAllTransactionsRequest[]
-  getEncryptionPublicKeyRequest: BraveWallet.GetEncryptionPublicKeyRequest
-  decryptRequest: BraveWallet.DecryptRequest
+  getEncryptionPublicKeyRequest: BraveWallet.GetEncryptionPublicKeyRequest | undefined
+  decryptRequest: BraveWallet.DecryptRequest | undefined
   switchChainRequest: BraveWallet.SwitchChainRequest
   hardwareWalletCode?: HardwareWalletResponseCodeType
   suggestedTokenRequest?: BraveWallet.AddSuggestTokenRequest
@@ -395,7 +395,7 @@ export interface SPLTransferFromParams extends BaseTransactionParams {
 
 export interface SolanaSerializedTransactionParams {
   encodedTransaction: string
-  from: string
+  accountId: BraveWallet.AccountId
   txType: BraveWallet.TransactionType
   sendOptions?: BraveWallet.SolanaSendTransactionOptions
   groupId?: string

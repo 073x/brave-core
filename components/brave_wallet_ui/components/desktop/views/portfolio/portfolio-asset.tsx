@@ -182,7 +182,7 @@ export const PortfolioAsset = (props: Props) => {
   const { data: transactionsByNetwork = [] } = useGetTransactionsQuery(
     selectedAssetFromParams
       ? {
-        address: null,
+        accountId: null,
         chainId: selectedAssetFromParams.chainId,
         coinType: selectedAssetFromParams.coin
       }

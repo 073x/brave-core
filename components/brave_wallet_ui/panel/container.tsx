@@ -22,7 +22,8 @@ import {
   TransactionsPanel,
   TransactionDetailPanel,
   AssetsPanel,
-  EncryptionKeyPanel
+  ProvidePubKeyPanel,
+  DecryptRequestPanel,
 } from '../components/extension'
 import { CreateAccountTab } from '../components/buy-send-swap/create-account'
 import { SelectNetworkWithHeader } from '../components/buy-send-swap/select-network-with-header'
@@ -281,27 +282,37 @@ function Container () {
     dispatch(WalletPanelActions.navigateBack())
   }
 
-  const onProvideEncryptionKey = () => {
-    dispatch(WalletPanelActions.getEncryptionPublicKeyProcessed({ requestId: getEncryptionPublicKeyRequest.requestId, approved: true }))
-  }
-
-  const onCancelProvideEncryptionKey = () => {
-    dispatch(WalletPanelActions.getEncryptionPublicKeyProcessed({ requestId: getEncryptionPublicKeyRequest.requestId, approved: false }))
-  }
-
-  const onAllowReadingEncryptedMessage = () => {
+  const onProvideEncryptionKey = (requestId: string) => {
     dispatch(
-      WalletPanelActions.decryptProcessed({
-        requestId: decryptRequest.requestId,
+      WalletPanelActions.getEncryptionPublicKeyProcessed({
+        requestId,
+        approved: true
+      })
+    )
+  }
+
+  const onCancelProvideEncryptionKey = (requestId: string) => {
+    dispatch(
+      WalletPanelActions.getEncryptionPublicKeyProcessed({
+        requestId,
         approved: false
       })
     )
   }
 
-  const onCancelAllowReadingEncryptedMessage = () => {
+  const onAllowReadingEncryptedMessage = (requestId: string) => {
     dispatch(
       WalletPanelActions.decryptProcessed({
-        requestId: decryptRequest.requestId,
+        requestId,
+        approved: false
+      })
+    )
+  }
+
+  const onCancelAllowReadingEncryptedMessage = (requestId: string) => {
+    dispatch(
+      WalletPanelActions.decryptProcessed({
+        requestId,
         approved: false
       })
     )
@@ -455,7 +466,6 @@ function Container () {
         <LongWrapper>
           <SignPanel
             signMessageData={signMessageData}
-            accounts={accounts}
             onCancel={onCancelSigning}
             // Pass a boolean here if the signing method is risky
             showWarning={false}
@@ -478,32 +488,30 @@ function Container () {
   }
 
   if (
-    selectedPanel === 'provideEncryptionKey' ||
-    selectedPanel === 'allowReadingEncryptedMessage'
+    selectedPanel === 'provideEncryptionKey' &&
+    getEncryptionPublicKeyRequest
   ) {
     return (
       <PanelWrapper isLonger={true}>
         <LongWrapper>
-          <EncryptionKeyPanel
-            panelType={
-              selectedPanel === 'provideEncryptionKey'
-                ? 'request'
-                : 'read'
-            }
-            encryptionKeyPayload={getEncryptionPublicKeyRequest}
-            decryptPayload={decryptRequest}
-            accounts={accounts}
-            selectedNetwork={selectedNetwork}
-            onCancel={
-              selectedPanel === 'provideEncryptionKey'
-                ? onCancelProvideEncryptionKey
-                : onCancelAllowReadingEncryptedMessage
-            }
-            onProvideOrAllow={
-              selectedPanel === 'provideEncryptionKey'
-                ? onProvideEncryptionKey
-                : onAllowReadingEncryptedMessage
-            }
+          <ProvidePubKeyPanel
+            payload={getEncryptionPublicKeyRequest}
+            onCancel={onCancelProvideEncryptionKey}
+            onProvide={onProvideEncryptionKey}
+          />
+        </LongWrapper>
+      </PanelWrapper>
+    )
+  }
+
+  if (selectedPanel === 'allowReadingEncryptedMessage' && decryptRequest) {
+    return (
+      <PanelWrapper isLonger={true}>
+        <LongWrapper>
+          <DecryptRequestPanel
+            payload={decryptRequest}
+            onCancel={onCancelAllowReadingEncryptedMessage}
+            onAllow={onAllowReadingEncryptedMessage}
           />
         </LongWrapper>
       </PanelWrapper>
@@ -609,8 +617,7 @@ function Container () {
           >
             <TransactionsPanel
               selectedNetwork={selectedNetwork}
-              selectedAccountAddress={selectedAccount?.accountId.address}
-              selectedAccountCoinType={selectedAccount?.accountId.coin}
+              selectedAccount={selectedAccount?.accountId}
             />
           </Panel>
         </StyledExtensionWrapper>
