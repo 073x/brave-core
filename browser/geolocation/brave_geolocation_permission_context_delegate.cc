@@ -10,8 +10,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/permissions/permission_request_id.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
+
+#if !BUILDFLAG(IS_ANDROID)
+#include "brave/browser/ui/geolocation/geolocation_accuracy_tab_helper.h"
+#endif
 
 BraveGeolocationPermissionContextDelegate::
     BraveGeolocationPermissionContextDelegate(
@@ -33,6 +38,32 @@ bool BraveGeolocationPermissionContextDelegate::DecidePermission(
     return true;
   }
 
-  return GeolocationPermissionContextDelegate::DecidePermission(
-      id, requesting_origin, user_gesture, callback, context);
+  if (GeolocationPermissionContextDelegate::DecidePermission(
+          id, requesting_origin, user_gesture, callback, context)) {
+    return true;
+  }
+
+#if !BUILDFLAG(IS_ANDROID)
+  // User will see geolocation permission requset.
+  // Launch geolocation accuracy helper dialog if needed.
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(id.global_render_frame_host_id());
+  DCHECK(rfh);
+
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(rfh);
+  if (GeolocationAccuracyTabHelper* accuracy_tab_helper =
+          GeolocationAccuracyTabHelper::FromWebContents(web_contents)) {
+    if (accuracy_tab_helper->LaunchAccuracyHelperDialogIfNeeded()) {
+      return true;
+    }
+
+    if (!content::RenderFrameHost::FromID(id.global_render_frame_host_id())) {
+      return true;
+    }
+  }
+
+#endif
+
+  return false;
 }
