@@ -6,7 +6,7 @@
 import * as WalletActions from '../common/actions/wallet_actions'
 import { Store } from './async/types'
 import { getBraveKeyring } from './api/hardware_keyrings'
-import { BraveWallet } from '../constants/types'
+import { BraveWallet, CoinType } from '../constants/types'
 import { objectEquals } from '../utils/object-utils'
 import { makeSerializableTransaction } from '../utils/model-serialization-utils'
 import { WalletPageActions } from '../page/actions'
@@ -82,7 +82,7 @@ export class WalletApiProxy {
       selectedWalletAccountChanged: function (account: BraveWallet.AccountInfo) {
         store.dispatch(walletApi.endpoints.invalidateSelectedAccount.initiate())
       },
-      selectedDappAccountChanged: function (coin: BraveWallet.CoinType, account: BraveWallet.AccountInfo | null) {
+      selectedDappAccountChanged: function (coin: CoinType, account: BraveWallet.AccountInfo | null) {
         // TODO: Handle this event.
       }
     })

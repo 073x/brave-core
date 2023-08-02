@@ -8,6 +8,7 @@ import { EntityId } from '@reduxjs/toolkit'
 // types
 import {
   BraveWallet,
+  CoinType,
   ERC721Metadata,
   NFTMetadataReturnType
 } from '../../../constants/types'
@@ -115,13 +116,13 @@ export const nftsEndpoints = ({
           const { data: api } = baseQuery(undefined)
           const { jsonRpcService } = api
           const result =
-            arg.coin === BraveWallet.CoinType.ETH
+            arg.coin === CoinType.ETH
               ? await jsonRpcService.getERC721Metadata(
                   arg.contractAddress,
                   arg.tokenId,
                   arg.chainId
                 )
-              : arg.coin === BraveWallet.CoinType.SOL
+              : arg.coin === CoinType.SOL
               ? await jsonRpcService.getSolTokenMetadata(
                   arg.chainId,
                   arg.contractAddress
@@ -144,9 +145,9 @@ export const nftsEndpoints = ({
             metadataUrl: result?.tokenUrl || '',
             chainName: tokenNetwork?.chainName || '',
             tokenType:
-              arg.coin === BraveWallet.CoinType.ETH
+              arg.coin === CoinType.ETH
                 ? 'ERC721'
-                : arg.coin === BraveWallet.CoinType.SOL
+                : arg.coin === CoinType.SOL
                 ? 'SPL'
                 : '',
             tokenID: arg.tokenId,

@@ -17,7 +17,7 @@ import { CreateAccountOptions } from '../../../../options/create-account-options
 
 // types
 import {
-  BraveWallet,
+  CoinType,
   CreateAccountOptionsType,
   PageState,
   WalletRoutes,
@@ -119,7 +119,7 @@ export const ImportAccountModal = () => {
     history.push(WalletRoutes.Accounts)
   }, [setImportError])
 
-  const importAccount = React.useCallback((accountName: string, privateKey: string, coin: BraveWallet.CoinType) => {
+  const importAccount = React.useCallback((accountName: string, privateKey: string, coin: CoinType) => {
     dispatch(WalletPageActions.importAccount({ accountName, privateKey, coin }))
   }, [])
 
@@ -164,10 +164,10 @@ export const ImportAccountModal = () => {
 
   const onClickCreateAccount = React.useCallback(() => {
     if (importOption === 'key') {
-      if (selectedAccountType?.coin === BraveWallet.CoinType.FIL) {
+      if (selectedAccountType?.coin === CoinType.FIL) {
         importFilecoinAccount(accountName, privateKey, filecoinNetwork)
       } else {
-        importAccount(accountName, privateKey, selectedAccountType?.coin || BraveWallet.CoinType.ETH)
+        importAccount(accountName, privateKey, selectedAccountType?.coin || CoinType.ETH)
       }
       return
     }
@@ -239,7 +239,7 @@ export const ImportAccountModal = () => {
             <DisclaimerText>{getLocale('braveWalletImportAccountDisclaimer')}</DisclaimerText>
           </ImportDisclaimer>
 
-          {selectedAccountType?.coin === BraveWallet.CoinType.FIL &&
+          {selectedAccountType?.coin === CoinType.FIL &&
             <>
               <WarningWrapper>
                 <WarningText>
@@ -265,7 +265,7 @@ export const ImportAccountModal = () => {
             </>
           }
 
-          {selectedAccountType?.coin === BraveWallet.CoinType.ETH &&
+          {selectedAccountType?.coin === CoinType.ETH &&
             <SelectWrapper>
               <Select
                 value={importOption}

@@ -10,7 +10,10 @@ import { skipToken } from '@reduxjs/toolkit/query/react'
 import { useAddressOrb } from '../../../common/hooks/use-orb'
 
 // Types
-import { BraveWallet } from '../../../constants/types'
+import {
+  BraveWallet,
+  SignMessageRequest
+} from '../../../constants/types'
 
 // Utils
 import { getLocale } from '../../../../common/locale'
@@ -57,7 +60,7 @@ import {
 
 interface Props {
   accounts: BraveWallet.AccountInfo[]
-  signMessageData: BraveWallet.SignMessageRequest[]
+  signMessageData: SignMessageRequest[]
   onCancel: () => void
   showWarning: boolean
 }
@@ -104,7 +107,7 @@ export const SignPanel = (props: Props) => {
 
   // state
   const [signStep, setSignStep] = React.useState<SignDataSteps>(SignDataSteps.SignData)
-  const [selectedQueueData, setSelectedQueueData] = React.useState<BraveWallet.SignMessageRequest>(signMessageData[0])
+  const [selectedQueueData, setSelectedQueueData] = React.useState<SignMessageRequest>(signMessageData[0])
   const [renderUnicode, setRenderUnicode] = React.useState<boolean>(true)
 
   const ethStandardSignData = selectedQueueData.signData.ethStandardSignData

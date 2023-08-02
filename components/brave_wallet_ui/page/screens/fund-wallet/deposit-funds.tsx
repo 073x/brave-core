@@ -19,6 +19,7 @@ import {
 // types
 import {
   BraveWallet,
+  CoinType,
   UserAssetInfoType,
   WalletState
 } from '../../../constants/types'
@@ -175,12 +176,12 @@ export const DepositFundsScreen = (props: Props) => {
 
   const depositTitleText: string = React.useMemo(() => {
     const isNativeAsset = (
-      selectedAsset?.coin === BraveWallet.CoinType.ETH &&
+      selectedAsset?.coin === CoinType.ETH &&
       !selectedAsset?.isErc20 &&
       !selectedAsset?.isErc721
     )
-    const isFil = selectedAsset?.coin === BraveWallet.CoinType.FIL
-    const isSolOrSpl = selectedAsset?.coin === BraveWallet.CoinType.SOL
+    const isFil = selectedAsset?.coin === CoinType.FIL
+    const isSolOrSpl = selectedAsset?.coin === CoinType.SOL
     const isErc = selectedAsset?.isErc20 || selectedAsset?.isErc721
 
     // EVM native network (gas) assets & Filecoin

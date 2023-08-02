@@ -9,6 +9,7 @@ import { useDispatch } from 'react-redux'
 // types
 import {
   BraveWallet,
+  CoinType,
   AccountPageTabs
 } from '../../../constants/types'
 
@@ -185,7 +186,7 @@ export const NftScreen = (props: Props) => {
 
   const onClickContractAddress = React.useCallback(() => {
     onClickViewOnBlockExplorer(
-      selectedAsset.coin === BraveWallet.CoinType.ETH
+      selectedAsset.coin === CoinType.ETH
         ? 'nft'
         : 'token',
       selectedAsset.contractAddress,

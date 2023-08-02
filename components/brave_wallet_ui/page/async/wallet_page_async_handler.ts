@@ -11,6 +11,7 @@ import * as WalletPageActions from '../actions/wallet_page_actions'
 import * as WalletActions from '../../common/actions/wallet_actions'
 import {
   BraveWallet,
+  CoinType,
   NFTMetadataReturnType,
   UpdateAccountNamePayloadType
 } from '../../constants/types'
@@ -249,9 +250,9 @@ handler.on(
         metadataUrl: result?.tokenUrl || '',
         chainName: tokenNetwork?.chainName || '',
         tokenType:
-          payload.coin === BraveWallet.CoinType.ETH
+          payload.coin === CoinType.ETH
             ? 'ERC721'
-            : payload.coin === BraveWallet.CoinType.SOL
+            : payload.coin === CoinType.SOL
             ? 'SPL'
             : '',
         tokenID: payload.tokenId,

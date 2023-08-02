@@ -10,6 +10,7 @@ import './locale'
 import {
   AppsListType,
   BraveWallet,
+  CoinType,
   PanelTypes,
   UIState,
   WalletState
@@ -488,7 +489,7 @@ export const _SignData = () => {
     id: 0,
     address: '0x3f29A1da97149722eB09c526E4eAd698895b426',
     originInfo: mockOriginInfo,
-    coin: BraveWallet.CoinType.ETH,
+    coin: CoinType.ETH,
     chainId: BraveWallet.MAINNET_CHAIN_ID,
     signData: {
       ethStandardSignData: undefined,

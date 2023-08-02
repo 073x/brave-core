@@ -47,7 +47,7 @@ import { useAccountOrb } from '../../../common/hooks/use-orb'
 // types
 import {
   PanelTypes,
-  BraveWallet,
+  CoinType,
   WalletOrigin
 } from '../../../constants/types'
 
@@ -160,7 +160,7 @@ export const ConnectedPanel = (props: Props) => {
 
   const onShowSitePermissions = React.useCallback(() => {
     if (isPermissionDenied) {
-      const contentPath = selectedCoin === BraveWallet.CoinType.SOL ? 'solana' : 'ethereum'
+      const contentPath = selectedCoin === CoinType.SOL ? 'solana' : 'ethereum'
       chrome.tabs.create({
         url: `brave://settings/content/${contentPath}`
       }).catch((e) => { console.error(e) })
@@ -205,7 +205,7 @@ export const ConnectedPanel = (props: Props) => {
   React.useEffect(() => {
     let subscribed = true
 
-    if (selectedAccount?.address && selectedCoin === BraveWallet.CoinType.SOL) {
+    if (selectedAccount?.address && selectedCoin === CoinType.SOL) {
       (async () => {
         const { panelHandler } = getWalletPanelApiProxy()
         await panelHandler.isSolanaAccountConnected(selectedAccount?.address)
@@ -279,7 +279,7 @@ export const ConnectedPanel = (props: Props) => {
     if (!selectedAccount) {
       return false
     }
-    if (selectedCoin === BraveWallet.CoinType.SOL) {
+    if (selectedCoin === CoinType.SOL) {
       return isSolanaConnected
     }
     if (originInfo.originSpec === WalletOrigin) {
@@ -295,7 +295,7 @@ export const ConnectedPanel = (props: Props) => {
     if (isPermissionDenied) {
       return getLocale('braveWalletPanelBlocked')
     }
-    if (selectedCoin === BraveWallet.CoinType.SOL) {
+    if (selectedCoin === CoinType.SOL) {
       return isConnected
         ? getLocale('braveWalletPanelConnected')
         : getLocale('braveWalletPanelDisconnected')
@@ -309,7 +309,7 @@ export const ConnectedPanel = (props: Props) => {
     if (isPermissionDenied) {
       return true
     }
-    if (selectedCoin === BraveWallet.CoinType.SOL) {
+    if (selectedCoin === CoinType.SOL) {
       return connectedAccounts.length !== 0
     }
     if (!originInfo)
@@ -356,7 +356,7 @@ export const ConnectedPanel = (props: Props) => {
         {showConnectButton ? (
           <StatusRow>
             <OvalButton onClick={onShowSitePermissions}>
-              {selectedCoin === BraveWallet.CoinType.SOL ? (
+              {selectedCoin === CoinType.SOL ? (
                 <ConnectedStatusBubble isConnected={isConnected} />
               ) : (
                 <>

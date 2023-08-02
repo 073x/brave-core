@@ -17,6 +17,7 @@ import {
 // types
 import {
   BraveWallet,
+  CoinType,
   WalletState
 } from '../../../constants/types'
 
@@ -170,7 +171,7 @@ export const AddCustomTokenForm = (props: Props) => {
       const newToken: BraveWallet.BlockchainToken = {
         contractAddress: tokenContractAddress,
         decimals: Number(tokenDecimals),
-        isErc20: customAssetsNetwork.coin !== BraveWallet.CoinType.SOL,
+        isErc20: customAssetsNetwork.coin !== CoinType.SOL,
         isErc721: false,
         isErc1155: false,
         isNft: false,
@@ -220,7 +221,7 @@ export const AddCustomTokenForm = (props: Props) => {
   const tokenContractAddressError =
     tokenContractAddress === '' ||
     (
-      customAssetsNetwork?.coin !== BraveWallet.CoinType.SOL &&
+      customAssetsNetwork?.coin !== CoinType.SOL &&
       !tokenContractAddress.toLowerCase().startsWith('0x')
     )
 
@@ -313,7 +314,7 @@ export const AddCustomTokenForm = (props: Props) => {
           </FormColumn>
           <FormColumn>
             <InputLabel>
-              {customAssetsNetwork?.coin === BraveWallet.CoinType.SOL
+              {customAssetsNetwork?.coin === CoinType.SOL
                 ? getLocale('braveWalletTokenMintAddress')
                 : getLocale('braveWalletWatchListTokenAddress')}
             </InputLabel>
