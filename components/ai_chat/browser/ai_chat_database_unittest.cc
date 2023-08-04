@@ -66,7 +66,8 @@ class AIChatDatabaseTest : public testing::Test {
 TEST_F(AIChatDatabaseTest, WriteConversation) {
   // We need static storage variables throughout the depths of lambdas
   static std::vector<mojom::ConversationEntryTextPtr> texts;
-  texts.emplace_back(mojom::ConversationEntryText::New(1, "Hello"));
+  texts.emplace_back(
+      mojom::ConversationEntryText::New(1, base::Time::Now(), "Hello"));
 
   InitDBAndDoWork([&]() {
     auto on_conversation_entry_added = [&](bool has_run) {
@@ -94,24 +95,27 @@ TEST_F(AIChatDatabaseTest, WriteConversation) {
 TEST_F(AIChatDatabaseTest, ReadConversation) {
   // We need static storage variables throughout the depths of lambdas
   static const int64_t kConversationId = INT64_C(1);
-  static const base::Time kCreatedAt(base::Time::Now());
+
+  static const base::Time kFirstTextCreatedAt(base::Time::Now());
+  static const base::Time kSecondTextCreatedAt(base::Time::Now() +
+                                               base::Minutes(5));
 
   static std::vector<mojom::ConversationEntryTextPtr> kTexts;
-  kTexts.emplace_back(
-      mojom::ConversationEntryText::New(1, "This is a generated response"));
-  kTexts.emplace_back(
-      mojom::ConversationEntryText::New(2, "This is a re-generated response"));
+  kTexts.emplace_back(mojom::ConversationEntryText::New(
+      1, kFirstTextCreatedAt, "This is a generated response"));
+  kTexts.emplace_back(mojom::ConversationEntryText::New(
+      2, kSecondTextCreatedAt, "This is a re-generated response"));
 
   InitDBAndDoWork([&]() {
     db_.AsyncCall(&AIChatDatabase::AddConversation)
-        .WithArgs(mojom::Conversation::New(kConversationId, kCreatedAt,
+        .WithArgs(mojom::Conversation::New(kConversationId, kFirstTextCreatedAt,
                                            "Summarizing Brave",
                                            GURL("https://brave.com/")))
         .Then(base::BindLambdaForTesting([&](bool has_run) {
           db_.AsyncCall(&AIChatDatabase::AddConversationEntry)
               .WithArgs(kConversationId,
                         mojom::ConversationEntry::New(
-                            INT64_C(-1), kCreatedAt,
+                            INT64_C(-1), kFirstTextCreatedAt,
                             mojom::CharacterType::ASSISTANT, std::move(kTexts)))
               .Then(base::BindLambdaForTesting([&](bool has_run) {
                 db_.AsyncCall(&AIChatDatabase::GetAllConversations)
@@ -122,11 +126,12 @@ TEST_F(AIChatDatabaseTest, ReadConversation) {
                                     "Summarizing Brave");
                           EXPECT_EQ(conversations[0]->page_url->spec(),
                                     "https://brave.com/");
-                          EXPECT_EQ(conversations[0]
-                                        ->date.ToDeltaSinceWindowsEpoch()
-                                        .InMicroseconds(),
-                                    kCreatedAt.ToDeltaSinceWindowsEpoch()
-                                        .InMicroseconds());
+                          EXPECT_EQ(
+                              conversations[0]
+                                  ->date.ToDeltaSinceWindowsEpoch()
+                                  .InMicroseconds(),
+                              kFirstTextCreatedAt.ToDeltaSinceWindowsEpoch()
+                                  .InMicroseconds());
 
                           db_.AsyncCall(&AIChatDatabase::GetConversationEntry)
                               .WithArgs(1)
@@ -139,6 +144,17 @@ TEST_F(AIChatDatabaseTest, ReadConversation) {
 
                                     EXPECT_EQ(entries[0]->character_type,
                                               mojom::CharacterType::ASSISTANT);
+
+                                    // ConversationEntry's date should match
+                                    // first generated text's date
+                                    EXPECT_EQ(
+                                        entries[0]
+                                            ->date.ToDeltaSinceWindowsEpoch()
+                                            .InMicroseconds(),
+                                        kFirstTextCreatedAt
+                                            .ToDeltaSinceWindowsEpoch()
+                                            .InMicroseconds());
+
                                     EXPECT_EQ(entries[0]->texts[0]->text,
                                               "This is a generated response");
                                     EXPECT_EQ(

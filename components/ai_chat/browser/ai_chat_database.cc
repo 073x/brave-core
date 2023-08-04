@@ -12,7 +12,7 @@ namespace {
 
 #define CONVERSATION_ROW_FIELDS "id, title, page_url"
 #define CONVERSATION_ENTRY_FIELDS "id, date, character_type, conversation_id"
-#define CONVERSATION_ENTRY_TEXT_FIELDS "id, text, conversation_entry_id"
+#define CONVERSATION_ENTRY_TEXT_FIELDS "id, date, text, conversation_entry_id"
 
 // Do not use To/FromInternalValues in base::Time
 // https://bugs.chromium.org/p/chromium/issues/detail?id=634507#c23
@@ -93,8 +93,10 @@ std::vector<mojom::ConversationEntryPtr> AIChatDatabase::GetConversationEntry(
   while (statement.Step()) {
     mojom::ConversationEntryText entry_text;
     entry_text.id = statement.ColumnInt64(4);
-    entry_text.text = statement.ColumnString(5);
-    int64_t conversation_entry_id = statement.ColumnInt64(6);
+    entry_text.date = DeserializeTime(statement.ColumnInt64(5));
+    entry_text.text = statement.ColumnString(6);
+
+    int64_t conversation_entry_id = statement.ColumnInt64(7);
 
     auto iter = base::ranges::find_if(
         history,
@@ -160,8 +162,9 @@ bool AIChatDatabase::AddConversationEntry(int64_t conversation_id,
   sql::Statement insert_conversation_entry_statement(GetDB().GetUniqueStatement(
       "INSERT INTO conversation_entry(" CONVERSATION_ENTRY_FIELDS
       ") VALUES(NULL, ?, ?, ?)"));
+  // ConversationEntry's date should always match first text's date
   insert_conversation_entry_statement.BindTimeDelta(
-      0, SerializeTimeToDelta(entry->date));
+      0, SerializeTimeToDelta(entry->texts[0]->date));
   insert_conversation_entry_statement.BindInt(
       1, static_cast<int>(entry->character_type));
   insert_conversation_entry_statement.BindInt64(
@@ -179,10 +182,12 @@ bool AIChatDatabase::AddConversationEntry(int64_t conversation_id,
         GetDB().GetUniqueStatement(
             "INSERT INTO "
             "conversation_entry_text(" CONVERSATION_ENTRY_TEXT_FIELDS
-            ") VALUES(NULL, ?, ?)"));
+            ") VALUES(NULL, ?, ?, ?)"));
 
-    insert_conversation_text_statement.BindString(0, text->text);
-    insert_conversation_text_statement.BindInt64(1, conversation_entry_row_id);
+    insert_conversation_text_statement.BindTimeDelta(
+        0, SerializeTimeToDelta(text->date));
+    insert_conversation_text_statement.BindString(1, text->text);
+    insert_conversation_text_statement.BindInt64(2, conversation_entry_row_id);
 
     if (!insert_conversation_text_statement.Run()) {
       DVLOG(0)
@@ -265,6 +270,7 @@ bool AIChatDatabase::CreateConversationEntryTextTable() {
   return GetDB().Execute(
       "CREATE TABLE IF NOT EXISTS conversation_entry_text("
       "id INTEGER PRIMARY KEY,"
+      "date INTEGER NOT NULL,"
       "text TEXT NOT NULL,"
       "conversation_entry_id INTEGER NOT NULL)");
 }
