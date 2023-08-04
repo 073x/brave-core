@@ -10,7 +10,16 @@ index eac30a8386acea27f7b3133b0480d3ab65e1d5ab..a789d99906ec41667de68be7ceb3018d
    if (entry_id.has_value()) {
      Show(SidePanelEntry::Key(entry_id.value()), open_trigger);
    } else {
-@@ -700,6 +701,7 @@ std::unique_ptr<views::View> SidePanelCoordinator::CreateHeader() {
+@@ -476,7 +477,7 @@ void SidePanelCoordinator::Show(
+ }
+ 
+ views::View* SidePanelCoordinator::GetContentContainerView() const {
+-  if (const SidePanel* side_panel = browser_view_->unified_side_panel()) {
++  if (const BraveSidePanel* side_panel = browser_view_->unified_side_panel()) {
+     return browser_view_->unified_side_panel()->GetViewByID(
+         kSidePanelContentContainerViewId);
+   }
+@@ -737,6 +738,7 @@ std::unique_ptr<views::View> SidePanelCoordinator::CreateHeader() {
            ChromeDistanceMetric::DISTANCE_SIDE_PANEL_HEADER_VECTOR_ICON_SIZE)));
    header_close_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
  
