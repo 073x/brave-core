@@ -9,10 +9,22 @@
 #include "sql/transaction.h"
 
 namespace {
-const int kCurrentVersionNumber = 1;
+
 #define CONVERSATION_ROW_FIELDS "id, title, page_url"
 #define CONVERSATION_ENTRY_FIELDS "id, date, character_type, conversation_id"
 #define CONVERSATION_ENTRY_TEXT_FIELDS "id, text, conversation_entry_id"
+
+// Do not use To/FromInternalValues in base::Time
+// https://bugs.chromium.org/p/chromium/issues/detail?id=634507#c23
+
+base::TimeDelta SerializeTimeToDelta(const base::Time& time) {
+  return time.ToDeltaSinceWindowsEpoch();
+}
+
+base::Time DeserializeTime(const int64_t& serialized_time) {
+  return base::Time() + base::Microseconds(serialized_time);
+}
+
 }  // namespace
 
 namespace ai_chat {
@@ -35,72 +47,88 @@ sql::InitStatus AIChatDatabase::Init(const base::FilePath& db_file_path) {
   return sql::INIT_OK;
 }
 
-int AIChatDatabase::GetCurrentVersion() {
-  return kCurrentVersionNumber;
-}
-
-std::vector<mojom::Conversation> AIChatDatabase::GetAllConversations() {
+std::vector<mojom::ConversationPtr> AIChatDatabase::GetAllConversations() {
   sql::Statement statement(GetDB().GetUniqueStatement(
-      "SELECT conversation.*, conversation_entry.date"
+      "SELECT conversation.*, entries.date "
       "FROM conversation"
-      "JOIN ("
-      "SELECT DISTINCT conversation_id, date"
-      "FROM conversation_entry"
-      "ORDER BY date DESC"
+      " JOIN ("
+      "SELECT conversation_id, date"
+      " FROM conversation_entry"
+      " GROUP BY conversation_id"
+      " ORDER BY date DESC"
       ") AS entries"
-      "ON conversation.id = entries.conversation_id"));
+      " ON conversation.id = entries.conversation_id"));
 
-  std::vector<mojom::Conversation> conversation_list;
+  std::vector<mojom::ConversationPtr> conversation_list;
 
   while (statement.Step()) {
     mojom::Conversation conversation;
     conversation.id = statement.ColumnInt64(0);
     conversation.title = statement.ColumnString(1);
-    conversation.page_url = statement.ColumnString(2);
-    conversation.date =
-        base::Time().FromInternalValue(statement.ColumnInt64(3));
-    conversation_list.emplace_back(conversation);
+    conversation.page_url = GURL(statement.ColumnString(2));
+    conversation.date = DeserializeTime(statement.ColumnInt64(3));
+    conversation_list.emplace_back(conversation.Clone());
   }
 
   return conversation_list;
 }
 
-std::vector<mojom::ConversationEntry> AIChatDatabase::GetConversationEntry(
-    const int64_t& conversation_id) {
+std::vector<mojom::ConversationEntryPtr> AIChatDatabase::GetConversationEntry(
+    int64_t conversation_id) {
   sql::Statement statement(GetDB().GetUniqueStatement(
-      "SELECT conversation_entry.*, conversation_entry_text.text"
+      "SELECT conversation_entry.*, entry_text.* "
       "FROM conversation_entry"
-      "JOIN ("
-      "SELECT conversation_entry_id, text"
-      "FROM conversation_entry_text"
-      ") AS conversation_entry_text"
-      "ON conversation_entry.id = conversation_entry_text.conversation_entry_id"
-      "WHERE conversation_id=?"
-      "ORDER BY conversation_entry.date DESC"));
+      " JOIN ("
+      " SELECT *"
+      " FROM conversation_entry_text"
+      ") AS entry_text"
+      " ON conversation_entry.id = entry_text.conversation_entry_id"
+      " WHERE conversation_id=?"
+      " ORDER BY conversation_entry.date DESC"));
 
-  std::vector<mojom::ConversationEntry> conversation_history;
+  statement.BindInt64(0, conversation_id);
+
+  std::vector<mojom::ConversationEntryPtr> history;
 
   while (statement.Step()) {
+    mojom::ConversationEntryText entry_text;
+    entry_text.id = statement.ColumnInt64(4);
+    entry_text.text = statement.ColumnString(5);
+    int64_t conversation_entry_id = statement.ColumnInt64(6);
+
+    auto iter = base::ranges::find_if(
+        history,
+        [&conversation_entry_id](const mojom::ConversationEntryPtr& entry) {
+          return entry->id = conversation_entry_id;
+        });
+
+    // A ConversationEntry can include multiple generated texts
+    if (iter != history.end()) {
+      (*iter)->texts.emplace_back(entry_text.Clone());
+      continue;
+    }
+
     mojom::ConversationEntry entry;
     entry.id = statement.ColumnInt64(0);
-    entry.date = base::Time() + base::Microseconds(statement.ColumnInt64(1));
+    entry.date = DeserializeTime(statement.ColumnInt64(1));
     entry.character_type =
         static_cast<mojom::CharacterType>(statement.ColumnInt(2));
-    entry.text = statement.ColumnString(4);
+    entry.texts.emplace_back(entry_text.Clone());
+
+    history.emplace_back(entry.Clone());
   }
 
-  return conversation_history;
+  return history;
 }
 
-bool AIChatDatabase::AddConversation(base::StringPiece title,
-                                     const GURL& page_url) {
+bool AIChatDatabase::AddConversation(mojom::ConversationPtr conversation) {
   sql::Statement statement(GetDB().GetUniqueStatement(
       "INSERT INTO conversation(" CONVERSATION_ROW_FIELDS
-      ")VALUES(NULL, ?, ?)"));
+      ") VALUES(NULL, ?, ?)"));
 
-  statement.BindString(1, title);
-  if (!page_url.is_empty()) {
-    statement.BindString(2, page_url.spec());
+  statement.BindString(0, conversation->title);
+  if (conversation->page_url.has_value()) {
+    statement.BindString(1, conversation->page_url->spec());
   }
 
   if (!statement.Run()) {
@@ -111,57 +139,63 @@ bool AIChatDatabase::AddConversation(base::StringPiece title,
   return true;
 }
 
-bool AIChatDatabase::AddConversationEntry(
-    const int64_t& conversation_id,
-    const mojom::ConversationEntry& entry) {
-  sql::Statement get_id_statement(
-      GetDB().GetUniqueStatement("SELECT id FROM conversation"
-                                 "WHERE id=?"));
-  get_id_statement.BindInt64(0, conversation_id);
-
-  if (!get_id_statement.Step()) {
-    DVLOG(0) << "ID not found in 'conversation' table";
-    return false;
-  }
-
+bool AIChatDatabase::AddConversationEntry(int64_t conversation_id,
+                                          mojom::ConversationEntryPtr entry) {
   sql::Transaction transaction(&db_);
   if (!transaction.Begin()) {
     DVLOG(0) << "Transaction cannot begin\n";
     return false;
   }
 
+  sql::Statement get_conversation_id_statement(
+      GetDB().GetUniqueStatement("SELECT id FROM conversation"
+                                 " WHERE id=?"));
+  get_conversation_id_statement.BindInt64(0, conversation_id);
+
+  if (!get_conversation_id_statement.Step()) {
+    DVLOG(0) << "ID not found in 'conversation' table";
+    return false;
+  }
+
   sql::Statement insert_conversation_entry_statement(GetDB().GetUniqueStatement(
       "INSERT INTO conversation_entry(" CONVERSATION_ENTRY_FIELDS
-      ")VALUES(NULL, ?, ?, ?)"));
-  insert_conversation_entry_statement.BindTimeDelta(
-      1, base::Time::Now().ToDeltaSinceWindowsEpoch());
+      ") VALUES(NULL, ?, ?, ?)"));
+  insert_conversation_entry_statement.BindTimeDelta(0,
+                                                    SerializeTimeToDelta(entry->date));
   insert_conversation_entry_statement.BindInt(
-      2, static_cast<int>(entry.character_type));
+      1, static_cast<int>(entry->character_type));
   insert_conversation_entry_statement.BindInt64(
-      3, get_id_statement.ColumnInt64(0));
-
-  sql::Statement insert_conversation_text_statement(GetDB().GetUniqueStatement(
-      "INSERT INTO conversation_entry_text(" CONVERSATION_ENTRY_TEXT_FIELDS
-      ")VALUES(NULL, ?, ?)"));
-  insert_conversation_text_statement.BindString(1, entry.text);
-  insert_conversation_text_statement.BindInt64(2, GetDB().GetLastInsertRowId());
+      2, get_conversation_id_statement.ColumnInt64(0));
 
   if (!insert_conversation_entry_statement.Run()) {
     DVLOG(0) << "Failed to execute 'conversation_entry' insert statement\n";
     return false;
   }
 
-  if (!insert_conversation_text_statement.Run()) {
-    DVLOG(0)
-        << "Failed to execute 'conversation_entry_text' insert statement\n";
-    return false;
+  int64_t conversation_entry_row_id = GetDB().GetLastInsertRowId();
+
+  for (const auto& text : entry->texts) {
+    sql::Statement insert_conversation_text_statement(
+        GetDB().GetUniqueStatement(
+            "INSERT INTO "
+            "conversation_entry_text(" CONVERSATION_ENTRY_TEXT_FIELDS
+            ") VALUES(NULL, ?, ?)"));
+
+    insert_conversation_text_statement.BindString(0, text->text);
+    insert_conversation_text_statement.BindInt64(1, conversation_entry_row_id);
+
+    if (!insert_conversation_text_statement.Run()) {
+      DVLOG(0)
+          << "Failed to execute 'conversation_entry_text' insert statement\n";
+      return false;
+    }
   }
 
   transaction.Commit();
   return true;
 }
 
-bool AIChatDatabase::DeleteConversation(const int64_t& conversation_id) {
+bool AIChatDatabase::DeleteConversation(int64_t conversation_id) {
   sql::Transaction transaction(&db_);
   if (!transaction.Begin()) {
     DVLOG(0) << "Transaction cannot begin\n";
@@ -204,10 +238,6 @@ bool AIChatDatabase::DropAllTables() {
   return GetDB().Execute("DROP TABLE conversation") &&
          GetDB().Execute("DROP TABLE conversation_entry") &&
          GetDB().Execute("DROP TABLE conversation_entry_text");
-}
-
-sql::Database& AIChatDatabase::GetDBForTesting() {
-  return db_;
 }
 
 sql::Database& AIChatDatabase::GetDB() {

@@ -11,7 +11,6 @@
 #include "brave/components/ai_chat/common/mojom/ai_chat.mojom.h"
 #include "sql/database.h"
 #include "sql/init_status.h"
-#include "url/gurl.h"
 
 namespace sql {
 class Database;
@@ -28,17 +27,14 @@ class AIChatDatabase {
 
   sql::InitStatus Init(const base::FilePath& db_file_path);
 
-  static int GetCurrentVersion();
-  std::vector<mojom::Conversation> GetAllConversations();
-  std::vector<mojom::ConversationEntry> GetConversationEntry(
-      const int64_t& conversation_id);
-  bool AddConversation(base::StringPiece title, const GURL& page_url = GURL());
-  bool AddConversationEntry(const int64_t& conversation_id,
-                            const mojom::ConversationEntry& entry);
-  bool DeleteConversation(const int64_t& conversation_id);
+  std::vector<mojom::ConversationPtr> GetAllConversations();
+  std::vector<mojom::ConversationEntryPtr> GetConversationEntry(
+      int64_t conversation_id);
+  bool AddConversation(mojom::ConversationPtr conversation);
+  bool AddConversationEntry(int64_t conversation_id,
+                            mojom::ConversationEntryPtr entry);
+  bool DeleteConversation(int64_t conversation_id);
   bool DropAllTables();
-
-  sql::Database& GetDBForTesting();
 
  private:
   sql::Database& GetDB();
