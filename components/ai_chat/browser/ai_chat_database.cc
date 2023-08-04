@@ -160,8 +160,8 @@ bool AIChatDatabase::AddConversationEntry(int64_t conversation_id,
   sql::Statement insert_conversation_entry_statement(GetDB().GetUniqueStatement(
       "INSERT INTO conversation_entry(" CONVERSATION_ENTRY_FIELDS
       ") VALUES(NULL, ?, ?, ?)"));
-  insert_conversation_entry_statement.BindTimeDelta(0,
-                                                    SerializeTimeToDelta(entry->date));
+  insert_conversation_entry_statement.BindTimeDelta(
+      0, SerializeTimeToDelta(entry->date));
   insert_conversation_entry_statement.BindInt(
       1, static_cast<int>(entry->character_type));
   insert_conversation_entry_statement.BindInt64(

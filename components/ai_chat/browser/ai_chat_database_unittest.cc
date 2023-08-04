@@ -94,6 +94,8 @@ TEST_F(AIChatDatabaseTest, WriteConversation) {
 TEST_F(AIChatDatabaseTest, ReadConversation) {
   // We need static storage variables throughout the depths of lambdas
   static const int64_t kConversationId = INT64_C(1);
+  static const base::Time kCreatedAt(base::Time::Now());
+
   static std::vector<mojom::ConversationEntryTextPtr> kTexts;
   kTexts.emplace_back(
       mojom::ConversationEntryText::New(1, "This is a generated response"));
@@ -102,14 +104,14 @@ TEST_F(AIChatDatabaseTest, ReadConversation) {
 
   InitDBAndDoWork([&]() {
     db_.AsyncCall(&AIChatDatabase::AddConversation)
-        .WithArgs(mojom::Conversation::New(kConversationId, base::Time::Now(),
+        .WithArgs(mojom::Conversation::New(kConversationId, kCreatedAt,
                                            "Summarizing Brave",
                                            GURL("https://brave.com/")))
         .Then(base::BindLambdaForTesting([&](bool has_run) {
           db_.AsyncCall(&AIChatDatabase::AddConversationEntry)
               .WithArgs(kConversationId,
                         mojom::ConversationEntry::New(
-                            INT64_C(-1), base::Time::Now(),
+                            INT64_C(-1), kCreatedAt,
                             mojom::CharacterType::ASSISTANT, std::move(kTexts)))
               .Then(base::BindLambdaForTesting([&](bool has_run) {
                 db_.AsyncCall(&AIChatDatabase::GetAllConversations)
@@ -120,6 +122,11 @@ TEST_F(AIChatDatabaseTest, ReadConversation) {
                                     "Summarizing Brave");
                           EXPECT_EQ(conversations[0]->page_url->spec(),
                                     "https://brave.com/");
+                          EXPECT_EQ(conversations[0]
+                                        ->date.ToDeltaSinceWindowsEpoch()
+                                        .InMicroseconds(),
+                                    kCreatedAt.ToDeltaSinceWindowsEpoch()
+                                        .InMicroseconds());
 
                           db_.AsyncCall(&AIChatDatabase::GetConversationEntry)
                               .WithArgs(1)
