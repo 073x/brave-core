@@ -80,7 +80,8 @@ void AIChatTabHelper::OnConversationActiveChanged(bool is_conversation_active) {
 }
 
 bool AIChatTabHelper::HasUserOptedIn() {
-  return pref_service_->GetBoolean(ai_chat::prefs::kBraveChatHasSeenDisclaimer);
+  //return pref_service_->GetBoolean(ai_chat::prefs::kBraveChatHasSeenDisclaimer);
+  return true;
 }
 
 void AIChatTabHelper::OnUserOptedIn() {
@@ -148,6 +149,7 @@ void AIChatTabHelper::MaybeGeneratePageText() {
   // for more page content (e.g. video transcript).
   // Perf: make sure we're not doing this when the feature
   // won't be used (e.g. not opted in or no active conversation).
+  is_conversation_active_ = true;
   if (is_page_text_fetch_in_progress_ || !article_text_.empty() ||
       !HasUserOptedIn() || !is_conversation_active_ ||
       !web_contents()->IsDocumentOnLoadCompletedInPrimaryMainFrame()) {
@@ -314,7 +316,7 @@ void AIChatTabHelper::OnAPISuggestedQuestionsResponse(
   auto success = result.Is2XXResponseCode();
   if (!success) {
     LOG(ERROR) << "Error getting question suggestions. Code: "
-               << result.response_code();
+               << result.response_code() << ", body == " << result.body();
     return;
   }
   // Validate
@@ -373,7 +375,6 @@ void AIChatTabHelper::OnAPISuggestedQuestionsResponse(
                                   base::WhitespaceHandling::TRIM_WHITESPACE,
                                   base::SplitResult::SPLIT_WANT_NONEMPTY);
   }
-
   suggested_questions_.insert(suggested_questions_.end(), questions.begin(),
                               questions.end());
   // Notify observers

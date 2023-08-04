@@ -146,6 +146,18 @@ public class BraveTabbedAppMenuPropertiesDelegate extends TabbedAppMenuPropertie
                 braveWallet.setVisible(false);
             }
         }
+        MenuItem braveLeo = menu.findItem(R.id.brave_leo_id);
+        if (braveLeo != null) {
+            if (ChromeFeatureList.isEnabled(BraveFeatureList.AI_CHAT)) {
+                braveLeo.setVisible(true);
+                if (shouldShowIconBeforeItem()) {
+                    braveLeo.setIcon(
+                            AppCompatResources.getDrawable(mContext, R.drawable.ic_brave_ai));
+                }
+            } else {
+                braveLeo.setVisible(false);
+            }
+        }
 
         MenuItem bravePlaylist = menu.findItem(R.id.brave_playlist_id);
         if (bravePlaylist != null) {
