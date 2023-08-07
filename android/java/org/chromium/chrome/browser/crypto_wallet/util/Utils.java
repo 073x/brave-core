@@ -272,6 +272,7 @@ public class Utils {
         assetDetailIntent.putExtra(ASSET_CONTRACT_ADDRESS, asset.contractAddress);
         assetDetailIntent.putExtra(ASSET_DECIMALS, asset.decimals);
         assetDetailIntent.putExtra(COIN_TYPE, asset.coin);
+        assetDetailIntent.setAction(Intent.ACTION_VIEW);
         context.startActivity(assetDetailIntent);
     }
 
@@ -287,6 +288,7 @@ public class Utils {
         assetDetailIntent.putExtra(ASSET_SYMBOL, asset.symbol);
         assetDetailIntent.putExtra(ASSET_NAME, asset.name);
         assetDetailIntent.putExtra(ASSET_LOGO, asset.image);
+        assetDetailIntent.setAction(Intent.ACTION_VIEW);
         context.startActivity(assetDetailIntent);
     }
 
