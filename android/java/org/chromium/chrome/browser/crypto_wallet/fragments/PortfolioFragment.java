@@ -375,12 +375,12 @@ public class PortfolioFragment
     }
 
     @Override
-    public void onTxPending(String accountName, String txId) {
+    public void onTxPending(String txId) {
         updatePortfolioGetPendingTx();
     }
 
     @Override
-    public void onTxApprovedRejected(boolean approved, String accountName, String txId) {
+    public void onTxApprovedRejected(boolean approved, String txId) {
         updatePendingTxNotification();
         updateNextPendingTx();
         callAnotherApproveDialog();
@@ -391,10 +391,7 @@ public class PortfolioFragment
             return;
         }
         ApproveTxBottomSheetDialogFragment approveTxBottomSheetDialogFragment =
-                ApproveTxBottomSheetDialogFragment.newInstance(mCurrentPendingTx,
-                        mWalletModel.getCryptoModel()
-                                .getPendingTxHelper()
-                                .getAccountNameForTransaction(mCurrentPendingTx));
+                ApproveTxBottomSheetDialogFragment.newInstance(mCurrentPendingTx);
         approveTxBottomSheetDialogFragment.setApprovedTxObserver(this);
         approveTxBottomSheetDialogFragment.show(
                 getFragmentManager(), ApproveTxBottomSheetDialogFragment.TAG_FRAGMENT);
