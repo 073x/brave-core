@@ -31,33 +31,26 @@ void ApplyPotentialQueryStringFilter(std::shared_ptr<BraveRequestInfo> ctx) {
     return;
   }
 
-  if (ctx->method != "GET") {
-    return;
-  }
-
+  // We either pass a valid redirect_source or initiator_url
   if (ctx->redirect_source.is_valid()) {
     if (ctx->internal_redirect) {
       // Ignore internal redirects since we trigger them.
       return;
     }
 
-    if (net::registry_controlled_domains::SameDomainOrHost(
-            ctx->redirect_source, ctx->request_url,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-      // Same-site redirects are exempted.
-      return;
+    auto filtered_url = ApplyPotentialQueryStringFilter(
+        ctx->redirect_source, ctx->request_url, ctx->method);
+
+    if (filtered_url.has_value()) {
+      ctx->new_url_spec = filtered_url.value().spec();
     }
-  } else if (ctx->initiator_url.is_valid() &&
-             net::registry_controlled_domains::SameDomainOrHost(
-                 ctx->initiator_url, ctx->request_url,
-                 net::registry_controlled_domains::
-                     INCLUDE_PRIVATE_REGISTRIES)) {
-    // Same-site requests are exempted.
-    return;
-  }
-  auto filtered_url = ApplyQueryFilter(ctx->request_url);
-  if (filtered_url.has_value()) {
-    ctx->new_url_spec = filtered_url.value().spec();
+  } else {
+    auto filtered_url = ApplyPotentialQueryStringFilter(
+        ctx->initiator_url, ctx->request_url, ctx->method);
+
+    if (filtered_url.has_value()) {
+      ctx->new_url_spec = filtered_url.value().spec();
+    }
   }
 }
 

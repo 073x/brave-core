@@ -10,18 +10,28 @@
 #include "url/gurl.h"
 
 TEST(BraveQueryFilter, FilterQueryTrackers) {
-  EXPECT_EQ(ApplyQueryFilter(GURL("https://test.com/?gclid=123")),
+  EXPECT_EQ(ApplyPotentialQueryStringFilter(GURL("https://brave.com"),
+                                            GURL("https://test.com/?gclid=123"),
+                                            "GET"),
             GURL("https://test.com/"));
-  EXPECT_EQ(ApplyQueryFilter(GURL("https://test.com/?fbclid=123")),
+  EXPECT_EQ(ApplyPotentialQueryStringFilter(
+                GURL("https://brave.com"), GURL("https://test.com/?fbclid=123"),
+                "GET"),
             GURL("https://test.com/"));
-  EXPECT_EQ(ApplyQueryFilter(GURL("https://test.com/?mkt_tok=123")),
+  EXPECT_EQ(ApplyPotentialQueryStringFilter(
+                GURL("https://brave.com"),
+                GURL("https://test.com/?mkt_tok=123"), "GET"),
             GURL("https://test.com/"));
-  EXPECT_EQ(
-      ApplyQueryFilter(GURL("https://test.com/?gclid=123&unsubscribe=123")),
-      GURL("https://test.com/?unsubscribe=123"));
-  EXPECT_EQ(
-      ApplyQueryFilter(GURL("https://test.com/?gclid=123&Unsubscribe=123")),
-      GURL("https://test.com/?Unsubscribe=123"));
-  EXPECT_FALSE(ApplyQueryFilter(GURL("https://test.com/")));
-  EXPECT_FALSE(ApplyQueryFilter(GURL()));
+  EXPECT_EQ(ApplyPotentialQueryStringFilter(
+                GURL("https://brave.com"),
+                GURL("https://test.com/?gclid=123&unsubscribe=123"), "GET"),
+            GURL("https://test.com/?unsubscribe=123"));
+  EXPECT_EQ(ApplyPotentialQueryStringFilter(
+                GURL("https://brave.com"),
+                GURL("https://test.com/?gclid=123&Unsubscribe=123"), "GET"),
+            GURL("https://test.com/?Unsubscribe=123"));
+  EXPECT_FALSE(ApplyPotentialQueryStringFilter(
+      GURL("https://brave.com"), GURL("https://test.com/"), "GET"));
+  EXPECT_FALSE(
+      ApplyPotentialQueryStringFilter(GURL("https://brave.com"), GURL()));
 }

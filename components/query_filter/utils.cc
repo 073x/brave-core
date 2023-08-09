@@ -13,6 +13,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
@@ -137,4 +138,24 @@ absl::optional<GURL> ApplyQueryFilter(const GURL& original_url) {
     return original_url.ReplaceComponents(replacements);
   }
   return absl::nullopt;
+}
+
+absl::optional<GURL> ApplyPotentialQueryStringFilter(
+    const GURL& source,
+    const GURL& destination,
+    const std::string& method) {
+  if (method != "GET") {
+    return absl::nullopt;
+  }
+
+  if (source.is_valid()) {
+    if (net::registry_controlled_domains::SameDomainOrHost(
+            source, destination,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+      // Same-site redirects are exempted.
+      return absl::nullopt;
+    }
+  }
+
+  return ApplyQueryFilter(ctx->request_url);
 }
