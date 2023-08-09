@@ -613,7 +613,7 @@ export function getTransactionTransferredValue (args: GetTransactionTransferredV
   if (isSolanaDappTransaction(tx)) {
     const lamportsMovedFromInstructions = getLamportsMovedFromInstructions(
       getTypedSolanaTxInstructions(tx.txDataUnion.solanaTxData) || [],
-      tx.fromAddressOpt ?? ''
+      tx.fromAddress ?? ''
     )
 
     const transferredValue = new Amount(getTransactionBaseValue(tx))
@@ -909,7 +909,7 @@ export const isSendingToKnownTokenContractAddress = (
 export const transactionHasSameAddressError = (
   tx: TransactionInfo
 ): boolean => {
-  const { txArgs, txType, fromAddressOpt: from = ''} = tx
+  const { txArgs, txType, fromAddress: from = ''} = tx
 
   // transfer(address recipient, uint256 amount) → bool
   if (txType === BraveWallet.TransactionType.ERC20Transfer) {
@@ -989,7 +989,7 @@ export const accountHasInsufficientFundsForTransaction = ({
   if (isSolanaDappTransaction(tx)) {
     const lamportsMovedFromInstructions = getLamportsMovedFromInstructions(
       getTypedSolanaTxInstructions(tx.txDataUnion.solanaTxData) || [],
-      tx.fromAddressOpt || ''
+      tx.fromAddress || ''
     )
 
     const transferredValue = new Amount(getTransactionBaseValue(tx))
