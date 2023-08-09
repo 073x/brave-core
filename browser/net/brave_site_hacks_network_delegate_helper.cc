@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/metrics/histogram_macros.h"
-#include "brave/browser/net/brave_query_filter.h"
 #include "brave/components/brave_shields/browser/brave_shields_util.h"
 #include "brave/components/constants/url_constants.h"
+#include "brave/components/query_filter/utils.h"
 #include "content/public/common/referrer.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_request.h"

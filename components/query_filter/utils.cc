@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "brave/browser/net/brave_query_filter.h"
+#include "brave/components/query_filter/utils.h"
 
 #include <string>
 #include <vector>
@@ -123,8 +123,9 @@ absl::optional<GURL> ApplyQueryFilter(const GURL& original_url) {
   const auto& query = original_url.query_piece();
   const std::string& spec = original_url.spec();
   const auto clean_query_value = StripQueryParameter(query, spec);
-  if (!clean_query_value.has_value())
+  if (!clean_query_value.has_value()) {
     return absl::nullopt;
+  }
   const auto& clean_query = clean_query_value.value();
   if (clean_query.length() < query.length()) {
     GURL::Replacements replacements;

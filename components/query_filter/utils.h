@@ -3,8 +3,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef BRAVE_BROWSER_NET_BRAVE_QUERY_FILTER_H_
-#define BRAVE_BROWSER_NET_BRAVE_QUERY_FILTER_H_
+#ifndef BRAVE_COMPONENTS_QUERY_FILTER_UTILS_H_
+#define BRAVE_COMPONENTS_QUERY_FILTER_UTILS_H_
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -12,4 +12,4 @@ class GURL;
 
 absl::optional<GURL> ApplyQueryFilter(const GURL& original_url);
 
-#endif  // BRAVE_BROWSER_NET_BRAVE_QUERY_FILTER_H_
+#endif  // BRAVE_COMPONENTS_QUERY_FILTER_UTILS_H_
