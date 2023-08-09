@@ -31,26 +31,12 @@ void ApplyPotentialQueryStringFilter(std::shared_ptr<BraveRequestInfo> ctx) {
     return;
   }
 
-  // We either pass a valid redirect_source or initiator_url
-  if (ctx->redirect_source.is_valid()) {
-    if (ctx->internal_redirect) {
-      // Ignore internal redirects since we trigger them.
-      return;
-    }
+  auto filtered_url = query_filter::MaybeApplyQueryStringFilter(
+      ctx->initiator_url, ctx->redirect_source, ctx->request_url, ctx->method,
+      ctx->internal_redirect);
 
-    auto filtered_url = ApplyPotentialQueryStringFilter(
-        ctx->redirect_source, ctx->request_url, ctx->method);
-
-    if (filtered_url.has_value()) {
-      ctx->new_url_spec = filtered_url.value().spec();
-    }
-  } else {
-    auto filtered_url = ApplyPotentialQueryStringFilter(
-        ctx->initiator_url, ctx->request_url, ctx->method);
-
-    if (filtered_url.has_value()) {
-      ctx->new_url_spec = filtered_url.value().spec();
-    }
+  if (filtered_url.has_value()) {
+    ctx->new_url_spec = filtered_url.value().spec();
   }
 }
 

@@ -257,7 +257,7 @@ void CopyLinkWithStrictCleaning(Browser* browser, const GURL& url) {
     final_url = url;
   }
   // Apply query filters.
-  auto filtered_url = ApplyQueryFilter(final_url);
+  auto filtered_url = query_filter::ApplyQueryFilter(final_url);
   if (filtered_url.has_value()) {
     final_url = filtered_url.value();
   }

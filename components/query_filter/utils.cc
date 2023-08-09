@@ -1,7 +1,7 @@
-/* Copyright (c) 2022 The Brave Authors. All rights reserved.
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this file,
- * You can obtain one at http://mozilla.org/MPL/2.0/. */
+// Copyright (c) 2023 The Brave Authors. All rights reserved.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this file,
+// You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include "brave/components/query_filter/utils.h"
 
@@ -17,7 +17,7 @@
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
-namespace {
+namespace query_filter {
 
 static constexpr auto kSimpleQueryStringTrackers =
     base::MakeFixedFlatSet<base::StringPiece>(
@@ -118,8 +118,6 @@ absl::optional<std::string> StripQueryParameter(const base::StringPiece& query,
   return absl::nullopt;
 }
 
-}  // namespace
-
 absl::optional<GURL> ApplyQueryFilter(const GURL& original_url) {
   const auto& query = original_url.query_piece();
   const std::string& spec = original_url.spec();
@@ -140,22 +138,37 @@ absl::optional<GURL> ApplyQueryFilter(const GURL& original_url) {
   return absl::nullopt;
 }
 
-absl::optional<GURL> ApplyPotentialQueryStringFilter(
-    const GURL& source,
-    const GURL& destination,
-    const std::string& method) {
-  if (method != "GET") {
+absl::optional<GURL> MaybeApplyQueryStringFilter(
+    const GURL& initiator_url,
+    const GURL& redirect_source_url,
+    const GURL& request_url,
+    const std::string& request_method,
+    const bool internal_redirect) {
+  if (request_method != "GET") {
     return absl::nullopt;
   }
 
-  if (source.is_valid()) {
+  if (redirect_source_url.is_valid()) {
+    if (internal_redirect) {
+      // Ignore internal redirects since we trigger them.
+      return absl::nullopt;
+    }
+
     if (net::registry_controlled_domains::SameDomainOrHost(
-            source, destination,
+            redirect_source_url, request_url,
             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
       // Same-site redirects are exempted.
       return absl::nullopt;
     }
+  } else if (initiator_url.is_valid() &&
+             net::registry_controlled_domains::SameDomainOrHost(
+                 initiator_url, request_url,
+                 net::registry_controlled_domains::
+                     INCLUDE_PRIVATE_REGISTRIES)) {
+    // Same-site requests are exempted.
+    return absl::nullopt;
   }
 
-  return ApplyQueryFilter(ctx->request_url);
+  return ApplyQueryFilter(request_url);
 }
+}  // namespace query_filter
