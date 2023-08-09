@@ -52,6 +52,8 @@ interface PageHandler {
   GetSiteInfo() => (SiteInfo? site_info);
   GetFaviconImageData() => (array<uint8>? favicon_image_data);
   OpenBraveLeoSettings();
+  DisconnectPageContents();
+  ClearConversationHistory();
 };
 
 interface ChatUIPage {

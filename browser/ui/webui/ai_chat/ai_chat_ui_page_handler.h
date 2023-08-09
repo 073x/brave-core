@@ -62,6 +62,8 @@ class AIChatUIPageHandler : public ai_chat::mojom::PageHandler,
   void SetAutoGenerateQuestions(bool can_auto_generate_questions) override;
   void GetSiteInfo(GetSiteInfoCallback callback) override;
   void OpenBraveLeoSettings() override;
+  void DisconnectPageContents() override;
+  void ClearConversationHistory() override;
 
   // content::WebContentsObserver:
   void OnVisibilityChanged(content::Visibility visibility) override;

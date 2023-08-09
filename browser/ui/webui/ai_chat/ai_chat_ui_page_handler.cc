@@ -156,6 +156,18 @@ void AIChatUIPageHandler::OpenBraveLeoSettings() {
   }
 }
 
+void AIChatUIPageHandler::DisconnectPageContents() {
+  if (active_chat_tab_helper_) {
+    active_chat_tab_helper_->DisconnectPageContents();
+  }
+}
+
+void AIChatUIPageHandler::ClearConversationHistory() {
+  if (active_chat_tab_helper_) {
+    active_chat_tab_helper_->ClearConversationHistory();
+  }
+}
+
 void AIChatUIPageHandler::MarkAgreementAccepted() {
   profile_->GetPrefs()->SetBoolean(ai_chat::prefs::kBraveChatHasSeenDisclaimer,
                                    true);
