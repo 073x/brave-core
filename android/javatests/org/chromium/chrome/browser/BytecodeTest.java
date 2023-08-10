@@ -1206,8 +1206,9 @@ public class BytecodeTest {
             if (f.getName().equals(fieldName)) {
                 if (checkTypes) {
                     if (fieldType != null && f.getType().equals(fieldType)) return true;
-                } else
+                } else {
                     return true;
+                }
             }
         }
         return false;

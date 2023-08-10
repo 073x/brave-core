@@ -318,10 +318,11 @@ public class Utils {
             return;
         }
         jsonRpcService.getCustomNetworks(coinType, chainIds -> {
-            if (Arrays.asList(chainIds).contains(chainId))
+            if (Arrays.asList(chainIds).contains(chainId)) {
                 callback.call(true);
-            else
+            } else {
                 callback.call(false);
+            }
         });
     }
 
@@ -334,8 +335,9 @@ public class Utils {
                         && 0
                                 != (activity.getApplicationInfo().flags
                                         & ApplicationInfo.FLAG_DEBUGGABLE))
-                    || !network.chainId.equals(BraveWalletConstants.LOCALHOST_CHAIN_ID))
+                    || !network.chainId.equals(BraveWalletConstants.LOCALHOST_CHAIN_ID)) {
                 categories.add(getNetworkShortText(network));
+            }
         }
 
         return categories.toArray(new String[0]);
@@ -343,8 +345,11 @@ public class Utils {
 
     public static NetworkInfo getNetworkInfoByChainId(
             String chainId, List<NetworkInfo> allNetworks) {
-        for (NetworkInfo network : allNetworks)
-            if (network.chainId.equals(chainId)) return network;
+        for (NetworkInfo network : allNetworks) {
+            if (network.chainId.equals(chainId)) {
+                return network;
+            }
+        }
         // Fall back to mainnet
         return allNetworks.get(0);
     }
@@ -352,15 +357,21 @@ public class Utils {
     public static NetworkInfo[] getNetworkInfosByChainIds(
             String[] chainId, NetworkInfo[] allNetworks) {
         List<NetworkInfo> list = new ArrayList<NetworkInfo>();
-        for (NetworkInfo network : allNetworks)
-            if (Arrays.asList(chainId).contains(network.chainId)) list.add(network);
+        for (NetworkInfo network : allNetworks) {
+            if (Arrays.asList(chainId).contains(network.chainId)) {
+                list.add(network);
+            }
+        }
 
         return list.toArray(new NetworkInfo[0]);
     }
 
     public static NetworkInfo getNetworkInfoByName(String chainName, NetworkInfo[] allNetworks) {
-        for (NetworkInfo network : allNetworks)
-            if (network.chainName.equals(chainName)) return network;
+        for (NetworkInfo network : allNetworks) {
+            if (network.chainName.equals(chainName)) {
+                return network;
+            }
+        }
         return allNetworks[0];
     }
 
@@ -447,9 +458,10 @@ public class Utils {
             parsed = (BigDecimal) df.parse(number, parsePosition);
         }
 
-        if (parsed == null || parsePosition.getIndex() != number.length())
+        if (parsed == null || parsePosition.getIndex() != number.length()) {
             throw new ParseException(
                     "Invalid input string to BigDecimal at ", parsePosition.getIndex());
+        }
         BigDecimal multiplier = BigDecimal.TEN.pow(decimals);
 
         return parsed.multiply(multiplier).toBigInteger();
@@ -606,10 +618,11 @@ public class Utils {
 
         value = value.toUpperCase(Locale.getDefault());
 
-        if (hasPrefix)
+        if (hasPrefix) {
             return prefix + value;
-        else
+        } else {
             return value;
+        }
     }
 
     public static long toDecimalLamport(String amount, int decimals) {
@@ -1078,10 +1091,12 @@ public class Utils {
     }
 
     public static AccountInfo findAccount(AccountInfo[] accounts, String address) {
-        for (AccountInfo acc : accounts)
+        for (AccountInfo acc : accounts) {
             if (acc.address.toLowerCase(Locale.getDefault())
-                            .equals(address.toLowerCase(Locale.getDefault())))
+                            .equals(address.toLowerCase(Locale.getDefault()))) {
                 return acc;
+            }
+        }
 
         return null;
     }
@@ -1220,8 +1235,9 @@ public class Utils {
                 // Filter by token. Account is already filtered in the accounts array.
                 if (!walletListItemModel.isAccount()
                         && !walletListItemModel.getBlockchainToken().symbol.equals(
-                                parsedTx.getSymbol()))
+                                parsedTx.getSymbol())) {
                     continue;
+                }
                 walletListItemModelList.add(itemModel);
             }
         }
@@ -1570,7 +1586,9 @@ public class Utils {
             Callbacks.Callback4<HashMap<String, Double>, BlockchainToken[], HashMap<String, Double>,
                     HashMap<String, HashMap<String, Double>>> callback) {
         BraveWalletBaseActivity activity = activityRef.get();
-        if (activity == null || activity.isFinishing()) return;
+        if (activity == null || activity.isFinishing()) {
+            return;
+        }
         BraveWalletService braveWalletService = activity.getBraveWalletService();
         BlockchainRegistry blockchainRegistry = activity.getBlockchainRegistry();
         AssetRatioService assetRatioService = activity.getAssetRatioService();
@@ -1579,8 +1597,9 @@ public class Utils {
                 && jsonRpcService != null : "Invalid service initialization";
 
         if (JavaUtils.anyNull(
-                    braveWalletService, blockchainRegistry, assetRatioService, jsonRpcService))
+                    braveWalletService, blockchainRegistry, assetRatioService, jsonRpcService)) {
             return;
+        }
 
         AsyncUtils.MultiResponseHandler multiResponse = new AsyncUtils.MultiResponseHandler(3);
 
@@ -1588,9 +1607,10 @@ public class Utils {
                 selectedNetwork, selectedNetwork.coin, tokenType, userAssetsOnly, tokens -> {
                     final BlockchainToken[] fullTokenList = tokens;
                     if (filterByTokens != null) {
-                        if (userAssetsOnly)
+                        if (userAssetsOnly) {
                             Log.w("Utils",
                                     "userAssetsOnly usually shouldn't be used with filterByTokens");
+                        }
                         tokens = filterByTokens;
                     }
 
@@ -1728,8 +1748,9 @@ public class Utils {
             NetworkInfo selectedNetwork) {
         BraveWalletBaseActivity activity = activityRef.get();
         if (activity == null || activity.isFinishing()
-                || JavaUtils.anyNull(activity.getBraveWalletP3A()))
+                || JavaUtils.anyNull(activity.getBraveWalletP3A())) {
             return;
+        }
         BraveWalletP3a braveWalletP3A = activity.getBraveWalletP3A();
 
         AsyncUtils.MultiResponseHandler multiResponse = new AsyncUtils.MultiResponseHandler(1);
