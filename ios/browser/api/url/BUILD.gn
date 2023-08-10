@@ -22,6 +22,7 @@ source_set("url") {
 
   deps = [
     "//base",
+    "//brave/components/query_filter",
     "//brave/extensions:common",
     "//components/lookalikes/core:core",
     "//components/lookalikes/core:safety_tips",

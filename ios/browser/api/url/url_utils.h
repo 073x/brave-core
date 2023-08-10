@@ -53,6 +53,26 @@ OBJC_EXPORT
 
 /// Returns true if the URL has a scheme.
 - (bool)brave_hasScheme:(NSString*)scheme NS_SWIFT_NAME(hasScheme(scheme:));
+
+/**
+ This function will return a new url stripping any tracking query params.
+ If nothing is to be stripped, a null value is returned.
+
+ @param requestURL Indicates where we are navigating to.
+ @param initiatorURL Indicates the origin initiating the resource request. It's
+ the first url in a redirect chain.
+ @param redirectSourceURL Indicates the we are currently navigating from. It's
+ the last url in a redirect chain
+ @param method The HTTP method of the request.
+ @param isInternalRedirect Indicating if this is an internal redirect or not.
+ @return The url we should redirect to.
+ */
+- (nullable NSURL*)
+    brave_stripTrackerParamsUsingInitiatorURL:(NSURL*)initiatorURL
+                            redirectSourceURL:(NSURL*)redirectSourceURL
+                                requestMethod:(NSString*)requestMethod
+                           isInternalRedirect:(BOOL)isInternalRedirect
+    NS_SWIFT_NAME(stripTrackerParams(initiatorURL:redirectSourceURL:requestMethod:isInternalRedirect:));
 @end
 
 OBJC_EXPORT
