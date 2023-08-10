@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/re2/src/re2/re2.h"
-#include "url/gurl.h"
 
 namespace query_filter {
 
