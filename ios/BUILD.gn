@@ -15,6 +15,7 @@ import("//brave/ios/browser/api/ntp_background_images/headers.gni")
 import("//brave/ios/browser/api/opentabs/headers.gni")
 import("//brave/ios/browser/api/p3a/headers.gni")
 import("//brave/ios/browser/api/qr_code/headers.gni")
+import("//brave/ios/browser/api/query_filter/headers.gni")
 import("//brave/ios/browser/api/session_restore/headers.gni")
 import("//brave/ios/browser/api/skus/headers.gni")
 import("//brave/ios/browser/api/url/headers.gni")
@@ -70,6 +71,7 @@ brave_core_public_headers += brave_shields_public_headers
 brave_core_public_headers += brave_stats_public_headers
 brave_core_public_headers += brave_wallet_public_headers
 brave_core_public_headers += browser_api_certificate_public_headers
+brave_core_public_headers += browser_api_query_filter_public_headers
 brave_core_public_headers += browser_api_favicon_public_headers
 brave_core_public_headers += rewards_public_headers
 brave_core_public_headers += browser_api_opentabs_public_headers
