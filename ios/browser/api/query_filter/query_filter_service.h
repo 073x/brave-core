@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 OBJC_EXPORT
 @interface QueryFilterService : NSObject
 - (instancetype)init NS_UNAVAILABLE;
@@ -25,12 +27,14 @@ OBJC_EXPORT
  @param isInternalRedirect Indicating if this is an internal redirect or not.
  @return The url we should redirect to.
  */
-+ (NSURL*)stripQueryParamsFromRequestURL:(NSURL*)requestURL
++ (nullable NSURL*)stripQueryParamsFromRequestURL:(NSURL*)requestURL
                             initiatorURL:(NSURL*)initiatorURL
                        redirectSourceURL:(NSURL*)redirectSourceURL
                            requestMethod:(NSString*)requestMethod
                       isInternalRedirect:(BOOL)isInternalRedirect;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif  // BRAVE_IOS_BROWSER_API_QUERY_FILTER_QUERY_FILTER_SERVICE_H_

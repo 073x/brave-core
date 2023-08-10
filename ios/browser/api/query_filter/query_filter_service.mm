@@ -13,7 +13,7 @@
 
 @implementation QueryFilterService
 
-+ (NSURL*)stripQueryParamsFromRequestURL:(NSURL*)requestURL
++ (nullable NSURL*)stripQueryParamsFromRequestURL:(NSURL*)requestURL
                             initiatorURL:(NSURL*)initiatorURL
                        redirectSourceURL:(NSURL*)redirectSourceURL
                            requestMethod:(NSString*)requestMethod
@@ -30,7 +30,7 @@
   if (filtered_url.has_value()) {
     return net::NSURLWithGURL(filtered_url.value());
   } else {
-    return requestURL;
+    return nullptr;
   }
 }
 
