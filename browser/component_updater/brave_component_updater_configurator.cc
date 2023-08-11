@@ -17,8 +17,6 @@
 #include "base/version.h"
 #include "brave/components/constants/brave_switches.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/component_updater/component_updater_command_line_config_policy.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -48,10 +46,12 @@ namespace component_updater {
 // a custom message signing protocol and it does not depend on using HTTPS.
 BraveConfigurator::BraveConfigurator(
     const base::CommandLine* cmdline,
-    PrefService* pref_service)
+    PrefService* pref_service,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : configurator_impl_(ComponentUpdaterCommandLineConfigPolicy(cmdline),
-        false),
-      pref_service_(pref_service) {
+                         false),
+      pref_service_(pref_service),
+      url_loader_factory_(url_loader_factory) {
   DCHECK(pref_service_);
 }
 
@@ -125,8 +125,7 @@ BraveConfigurator::GetNetworkFetcherFactory() {
   if (!network_fetcher_factory_) {
     network_fetcher_factory_ =
         base::MakeRefCounted<update_client::NetworkFetcherChromiumFactory>(
-            g_browser_process->system_network_context_manager()
-                ->GetSharedURLLoaderFactory(),
+            url_loader_factory_,
             // Never send cookies for component update downloads.
             base::BindRepeating([](const GURL& url) { return false; }));
   }

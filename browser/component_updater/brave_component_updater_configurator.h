@@ -29,12 +29,17 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace component_updater {
+namespace network {
+class SharedURLLoaderFactory;
+}
 
+namespace component_updater {
 class BraveConfigurator : public update_client::Configurator {
  public:
-  BraveConfigurator(const base::CommandLine* cmdline,
-                    PrefService* pref_service);
+  BraveConfigurator(
+      const base::CommandLine* cmdline,
+      PrefService* pref_service,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   // update_client::Configurator overrides.
   base::TimeDelta InitialDelay() const override;
@@ -74,6 +79,7 @@ class BraveConfigurator : public update_client::Configurator {
   ConfiguratorImpl configurator_impl_;
   raw_ptr<PrefService> pref_service_ =
       nullptr;  // This member is not owned by this class.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   scoped_refptr<update_client::NetworkFetcherFactory> network_fetcher_factory_;
   scoped_refptr<update_client::CrxDownloaderFactory> crx_downloader_factory_;
   scoped_refptr<update_client::UnzipperFactory> unzip_factory_;
