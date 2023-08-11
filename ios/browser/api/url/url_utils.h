@@ -72,7 +72,7 @@ OBJC_EXPORT
                             redirectSourceURL:(NSURL*)redirectSourceURL
                                 requestMethod:(NSString*)requestMethod
                            isInternalRedirect:(BOOL)isInternalRedirect
-    NS_SWIFT_NAME(stripTrackerParams(initiatorURL:redirectSourceURL:requestMethod:isInternalRedirect:));
+    NS_SWIFT_NAME(stripTrackerParams(initiatorURL:redirectSourceURL:requestMethod:isInternalRedirect:));  // NOLINT
 @end
 
 OBJC_EXPORT
