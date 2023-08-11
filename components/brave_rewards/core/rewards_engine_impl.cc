@@ -64,28 +64,32 @@ void RewardsEngineImpl::GetEnvironment(GetEnvironmentCallback callback) {
 void RewardsEngineImpl::CreateRewardsWallet(
     const std::string& country,
     CreateRewardsWalletCallback callback) {
-  WhenReady([this, country, callback = std::move(callback)]() mutable {
-    wallet()->CreateWalletIfNecessary(
-        country.empty() ? absl::nullopt
-                        : absl::optional<std::string>(std::move(country)),
-        std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, const std::string& country,
+         CreateRewardsWalletCallback callback) {
+        self->wallet()->CreateWalletIfNecessary(
+            country.empty() ? absl::nullopt
+                            : absl::optional<std::string>(std::move(country)),
+            std::move(callback));
+      },
+      country, std::move(callback));
 }
 
 void RewardsEngineImpl::GetRewardsParameters(
     GetRewardsParametersCallback callback) {
-  WhenReady([this, callback = std::move(callback)]() mutable {
-    auto params = state()->GetRewardsParameters();
-    if (params->rate == 0.0) {
-      // A rate of zero indicates that the rewards parameters have
-      // not yet been successfully initialized from the server.
-      BLOG(1, "Rewards parameters not set - fetching from server");
-      api()->FetchParameters(std::move(callback));
-      return;
-    }
-
-    std::move(callback).Run(std::move(params));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, GetRewardsParametersCallback callback) {
+        auto params = self->state()->GetRewardsParameters();
+        if (params->rate == 0.0) {
+          // A rate of zero indicates that the rewards parameters have
+          // not yet been successfully initialized from the server.
+          BLOG(1, "Rewards parameters not set - fetching from server");
+          self->api()->FetchParameters(std::move(callback));
+          return;
+        }
+        std::move(callback).Run(std::move(params));
+      },
+      std::move(callback));
 }
 
 void RewardsEngineImpl::GetAutoContributeProperties(
@@ -264,78 +268,106 @@ void RewardsEngineImpl::SetPublisherExclude(
     mojom::PublisherExclude exclude,
     SetPublisherExcludeCallback callback) {
   WhenReady(
-      [this, publisher_key, exclude, callback = std::move(callback)]() mutable {
-        publisher()->SetPublisherExclude(publisher_key, exclude,
-                                         std::move(callback));
-      });
+      [](RewardsEngineImpl* self, const std::string& publisher_key,
+         mojom::PublisherExclude exclude,
+         SetPublisherExcludeCallback callback) {
+        self->publisher()->SetPublisherExclude(publisher_key, exclude,
+                                               std::move(callback));
+      },
+      publisher_key, exclude, std::move(callback));
 }
 
 void RewardsEngineImpl::RestorePublishers(RestorePublishersCallback callback) {
-  WhenReady([this, callback = std::move(callback)]() mutable {
-    database()->RestorePublishers(std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, RestorePublishersCallback callback) {
+        self->database()->RestorePublishers(std::move(callback));
+      },
+      std::move(callback));
 }
 
 void RewardsEngineImpl::FetchPromotions(FetchPromotionsCallback callback) {
-  WhenReady([this, callback = std::move(callback)]() mutable {
-    promotion()->Fetch(std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, FetchPromotionsCallback callback) {
+        self->promotion()->Fetch(std::move(callback));
+      },
+      std::move(callback));
 }
 
 void RewardsEngineImpl::ClaimPromotion(const std::string& promotion_id,
                                        const std::string& payload,
                                        ClaimPromotionCallback callback) {
   WhenReady(
-      [this, promotion_id, payload, callback = std::move(callback)]() mutable {
-        promotion()->Claim(promotion_id, payload, std::move(callback));
-      });
+      [](RewardsEngineImpl* self, const std::string& promotion_id,
+         const std::string& payload, ClaimPromotionCallback callback) {
+        self->promotion()->Claim(promotion_id, payload, std::move(callback));
+      },
+      promotion_id, payload, std::move(callback));
 }
 
 void RewardsEngineImpl::AttestPromotion(const std::string& promotion_id,
                                         const std::string& solution,
                                         AttestPromotionCallback callback) {
   WhenReady(
-      [this, promotion_id, solution, callback = std::move(callback)]() mutable {
-        promotion()->Attest(promotion_id, solution, std::move(callback));
-      });
+      [](RewardsEngineImpl* self, const std::string& promotion_id,
+         const std::string& solution, AttestPromotionCallback callback) {
+        self->promotion()->Attest(promotion_id, solution, std::move(callback));
+      },
+      promotion_id, solution, std::move(callback));
 }
 
 void RewardsEngineImpl::SetPublisherMinVisitTime(int duration_in_seconds) {
-  WhenReady([this, duration_in_seconds]() {
-    state()->SetPublisherMinVisitTime(duration_in_seconds);
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, int duration_in_seconds) {
+        self->state()->SetPublisherMinVisitTime(duration_in_seconds);
+      },
+      duration_in_seconds);
 }
 
 void RewardsEngineImpl::SetPublisherMinVisits(int visits) {
-  WhenReady([this, visits]() { state()->SetPublisherMinVisits(visits); });
+  WhenReady([](RewardsEngineImpl* self,
+               int visits) { self->state()->SetPublisherMinVisits(visits); },
+            visits);
 }
 
 void RewardsEngineImpl::SetAutoContributionAmount(double amount) {
-  WhenReady([this, amount]() { state()->SetAutoContributionAmount(amount); });
+  WhenReady(
+      [](RewardsEngineImpl* self, double amount) {
+        self->state()->SetAutoContributionAmount(amount);
+      },
+      amount);
 }
 
 void RewardsEngineImpl::SetAutoContributeEnabled(bool enabled) {
-  WhenReady([this, enabled]() { state()->SetAutoContributeEnabled(enabled); });
+  WhenReady(
+      [](RewardsEngineImpl* self, bool enabled) {
+        self->state()->SetAutoContributeEnabled(enabled);
+      },
+      enabled);
 }
 
 void RewardsEngineImpl::GetBalanceReport(mojom::ActivityMonth month,
                                          int32_t year,
                                          GetBalanceReportCallback callback) {
-  WhenReady([this, month, year,
-             callback = ToLegacyCallback(std::move(callback))]() mutable {
-    database()->GetBalanceReportInfo(month, year, std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, mojom::ActivityMonth month, int32_t year,
+         GetBalanceReportCallback callback) {
+        self->database()->GetBalanceReportInfo(
+            month, year, ToLegacyCallback(std::move(callback)));
+      },
+      month, year, std::move(callback));
 }
 
 void RewardsEngineImpl::GetPublisherActivityFromUrl(
     uint64_t window_id,
     mojom::VisitDataPtr visit_data,
     const std::string& publisher_blob) {
-  WhenReady([this, window_id, visit_data = std::move(visit_data),
-             publisher_blob]() mutable {
-    publisher()->GetPublisherActivityFromUrl(window_id, std::move(visit_data),
-                                             publisher_blob);
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, uint64_t window_id,
+         mojom::VisitDataPtr visit_data, const std::string& publisher_blob) {
+        self->publisher()->GetPublisherActivityFromUrl(
+            window_id, std::move(visit_data), publisher_blob);
+      },
+      window_id, std::move(visit_data), publisher_blob);
 }
 
 void RewardsEngineImpl::GetAutoContributionAmount(
@@ -350,28 +382,37 @@ void RewardsEngineImpl::GetAutoContributionAmount(
 void RewardsEngineImpl::GetPublisherBanner(
     const std::string& publisher_id,
     GetPublisherBannerCallback callback) {
-  WhenReady([this, publisher_id,
-             callback = ToLegacyCallback(std::move(callback))]() mutable {
-    publisher()->GetPublisherBanner(publisher_id, std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, const std::string& publisher_id,
+         GetPublisherBannerCallback callback) {
+        self->publisher()->GetPublisherBanner(
+            publisher_id, ToLegacyCallback(std::move(callback)));
+      },
+      publisher_id, std::move(callback));
 }
 
 void RewardsEngineImpl::OneTimeTip(const std::string& publisher_key,
                                    double amount,
                                    OneTimeTipCallback callback) {
-  WhenReady([this, publisher_key, amount,
-             callback = ToLegacyCallback(std::move(callback))]() {
-    contribution()->OneTimeTip(publisher_key, amount, std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, const std::string& publisher_key,
+         double amount, OneTimeTipCallback callback) {
+        self->contribution()->OneTimeTip(publisher_key, amount,
+                                         ToLegacyCallback(std::move(callback)));
+      },
+      publisher_key, amount, std::move(callback));
 }
 
 void RewardsEngineImpl::RemoveRecurringTip(
     const std::string& publisher_key,
     RemoveRecurringTipCallback callback) {
-  WhenReady([this, publisher_key,
-             callback = ToLegacyCallback(std::move(callback))]() mutable {
-    database()->RemoveRecurringTip(publisher_key, std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, const std::string& publisher_key,
+         RemoveRecurringTipCallback callback) {
+        self->database()->RemoveRecurringTip(
+            publisher_key, ToLegacyCallback(std::move(callback)));
+      },
+      publisher_key, std::move(callback));
 }
 
 void RewardsEngineImpl::GetCreationStamp(GetCreationStampCallback callback) {
@@ -384,73 +425,85 @@ void RewardsEngineImpl::GetCreationStamp(GetCreationStampCallback callback) {
 
 void RewardsEngineImpl::GetRewardsInternalsInfo(
     GetRewardsInternalsInfoCallback callback) {
-  WhenReady([this, callback = std::move(callback)]() mutable {
-    auto info = mojom::RewardsInternalsInfo::New();
+  WhenReady(
+      [](RewardsEngineImpl* self, GetRewardsInternalsInfoCallback callback) {
+        auto info = mojom::RewardsInternalsInfo::New();
 
-    mojom::RewardsWalletPtr wallet = wallet_.GetWallet();
-    if (!wallet) {
-      BLOG(0, "Wallet is null");
-      std::move(callback).Run(std::move(info));
-      return;
-    }
+        mojom::RewardsWalletPtr wallet = self->wallet_.GetWallet();
+        if (!wallet) {
+          BLOG(0, "Wallet is null");
+          std::move(callback).Run(std::move(info));
+          return;
+        }
 
-    // Retrieve the payment id.
-    info->payment_id = wallet->payment_id;
+        // Retrieve the payment id.
+        info->payment_id = wallet->payment_id;
 
-    // Retrieve the boot stamp.
-    info->boot_stamp = state()->GetCreationStamp();
+        // Retrieve the boot stamp.
+        info->boot_stamp = self->state()->GetCreationStamp();
 
-    // Retrieve the key info seed and validate it.
-    if (!util::Security::IsSeedValid(wallet->recovery_seed)) {
-      info->is_key_info_seed_valid = false;
-    } else {
-      std::vector<uint8_t> secret_key =
-          util::Security::GetHKDF(wallet->recovery_seed);
-      std::vector<uint8_t> public_key;
-      std::vector<uint8_t> new_secret_key;
-      info->is_key_info_seed_valid = util::Security::GetPublicKeyFromSeed(
-          secret_key, &public_key, &new_secret_key);
-    }
+        // Retrieve the key info seed and validate it.
+        if (!util::Security::IsSeedValid(wallet->recovery_seed)) {
+          info->is_key_info_seed_valid = false;
+        } else {
+          std::vector<uint8_t> secret_key =
+              util::Security::GetHKDF(wallet->recovery_seed);
+          std::vector<uint8_t> public_key;
+          std::vector<uint8_t> new_secret_key;
+          info->is_key_info_seed_valid = util::Security::GetPublicKeyFromSeed(
+              secret_key, &public_key, &new_secret_key);
+        }
 
-    std::move(callback).Run(std::move(info));
-  });
+        std::move(callback).Run(std::move(info));
+      },
+      std::move(callback));
 }
 
 void RewardsEngineImpl::SaveRecurringTip(mojom::RecurringTipPtr info,
                                          SaveRecurringTipCallback callback) {
-  WhenReady([this, info = std::move(info),
-             callback = ToLegacyCallback(std::move(callback))]() mutable {
-    database()->SaveRecurringTip(
-        std::move(info),
-        [this, callback = std::move(callback)](mojom::Result result) {
-          contribution()->SetMonthlyContributionTimer();
-          callback(result);
-        });
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, mojom::RecurringTipPtr info,
+         SaveRecurringTipCallback callback) {
+        self->database()->SaveRecurringTip(
+            std::move(info), [self, callback = ToLegacyCallback(std::move(
+                                        callback))](mojom::Result result) {
+              self->contribution()->SetMonthlyContributionTimer();
+              callback(result);
+            });
+      },
+      std::move(info), std::move(callback));
 }
 
 void RewardsEngineImpl::SendContribution(const std::string& publisher_id,
                                          double amount,
                                          bool set_monthly,
                                          SendContributionCallback callback) {
-  WhenReady([this, publisher_id, amount, set_monthly,
-             callback = std::move(callback)]() mutable {
-    contribution()->SendContribution(publisher_id, amount, set_monthly,
-                                     std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, const std::string& publisher_id,
+         double amount, bool set_monthly, SendContributionCallback callback) {
+        self->contribution()->SendContribution(
+            publisher_id, amount, set_monthly, std::move(callback));
+      },
+      publisher_id, amount, set_monthly, std::move(callback));
 }
 
 void RewardsEngineImpl::GetRecurringTips(GetRecurringTipsCallback callback) {
-  WhenReady([this, callback = ToLegacyCallback(std::move(callback))]() mutable {
-    contribution()->GetRecurringTips(std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, GetRecurringTipsCallback callback) {
+        self->contribution()->GetRecurringTips(
+            ToLegacyCallback(std::move(callback)));
+      },
+      std::move(callback));
 }
 
 void RewardsEngineImpl::GetOneTimeTips(GetOneTimeTipsCallback callback) {
-  WhenReady([this, callback = ToLegacyCallback(std::move(callback))]() mutable {
-    database()->GetOneTimeTips(util::GetCurrentMonth(), util::GetCurrentYear(),
-                               std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, GetOneTimeTipsCallback callback) {
+        self->database()->GetOneTimeTips(util::GetCurrentMonth(),
+                                         util::GetCurrentYear(),
+                                         ToLegacyCallback(std::move(callback)));
+      },
+      std::move(callback));
 }
 
 void RewardsEngineImpl::GetActivityInfoList(
@@ -458,37 +511,49 @@ void RewardsEngineImpl::GetActivityInfoList(
     uint32_t limit,
     mojom::ActivityInfoFilterPtr filter,
     GetActivityInfoListCallback callback) {
-  WhenReady([this, start, limit, filter = std::move(filter),
-             callback = ToLegacyCallback(std::move(callback))]() mutable {
-    database()->GetActivityInfoList(start, limit, std::move(filter),
-                                    std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, uint32_t start, uint32_t limit,
+         mojom::ActivityInfoFilterPtr filter,
+         GetActivityInfoListCallback callback) {
+        self->database()->GetActivityInfoList(
+            start, limit, std::move(filter),
+            ToLegacyCallback(std::move(callback)));
+      },
+      start, limit, std::move(filter), std::move(callback));
 }
 
 void RewardsEngineImpl::GetPublishersVisitedCount(
     GetPublishersVisitedCountCallback callback) {
-  WhenReady([this, callback = std::move(callback)]() mutable {
-    database()->GetPublishersVisitedCount(std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, GetPublishersVisitedCountCallback callback) {
+        self->database()->GetPublishersVisitedCount(std::move(callback));
+      },
+      std::move(callback));
 }
 
 void RewardsEngineImpl::GetExcludedList(GetExcludedListCallback callback) {
-  WhenReady([this, callback = ToLegacyCallback(std::move(callback))]() mutable {
-    database()->GetExcludedList(std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, GetExcludedListCallback callback) {
+        self->database()->GetExcludedList(
+            ToLegacyCallback(std::move(callback)));
+      },
+      std::move(callback));
 }
 
 void RewardsEngineImpl::RefreshPublisher(const std::string& publisher_key,
                                          RefreshPublisherCallback callback) {
-  WhenReady([this, publisher_key,
-             callback = ToLegacyCallback(std::move(callback))]() mutable {
-    publisher()->RefreshPublisher(publisher_key, std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, const std::string& publisher_key,
+         RefreshPublisherCallback callback) {
+        self->publisher()->RefreshPublisher(
+            publisher_key, ToLegacyCallback(std::move(callback)));
+      },
+      publisher_key, std::move(callback));
 }
 
 void RewardsEngineImpl::StartContributionsForTesting() {
-  WhenReady([this]() {
-    contribution()->StartContributionsForTesting();  // IN-TEST
+  WhenReady([](RewardsEngineImpl* self) {
+    self->contribution()->StartContributionsForTesting();  // IN-TEST
   });
 }
 
@@ -496,60 +561,80 @@ void RewardsEngineImpl::UpdateMediaDuration(uint64_t window_id,
                                             const std::string& publisher_key,
                                             uint64_t duration,
                                             bool first_visit) {
-  WhenReady([this, window_id, publisher_key, duration, first_visit]() {
-    publisher()->UpdateMediaDuration(window_id, publisher_key, duration,
-                                     first_visit);
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, uint64_t window_id,
+         const std::string& publisher_key, uint64_t duration,
+         bool first_visit) {
+        self->publisher()->UpdateMediaDuration(window_id, publisher_key,
+                                               duration, first_visit);
+      },
+      window_id, publisher_key, duration, first_visit);
 }
 
 void RewardsEngineImpl::IsPublisherRegistered(
     const std::string& publisher_id,
     IsPublisherRegisteredCallback callback) {
-  WhenReady([this, publisher_id,
-             callback = ToLegacyCallback(std::move(callback))]() mutable {
-    publisher()->GetServerPublisherInfo(
-        publisher_id, true /* use_prefix_list */,
-        [callback = std::move(callback)](mojom::ServerPublisherInfoPtr info) {
-          callback(info &&
-                   info->status != mojom::PublisherStatus::NOT_VERIFIED);
-        });
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, const std::string& publisher_id,
+         IsPublisherRegisteredCallback callback) {
+        self->publisher()->GetServerPublisherInfo(
+            publisher_id, true /* use_prefix_list */,
+            [callback = ToLegacyCallback(std::move(callback))](
+                mojom::ServerPublisherInfoPtr info) {
+              callback(info &&
+                       info->status != mojom::PublisherStatus::NOT_VERIFIED);
+            });
+      },
+      publisher_id, std::move(callback));
 }
 
 void RewardsEngineImpl::GetPublisherInfo(const std::string& publisher_key,
                                          GetPublisherInfoCallback callback) {
-  WhenReady([this, publisher_key,
-             callback = ToLegacyCallback(std::move(callback))]() mutable {
-    database()->GetPublisherInfo(publisher_key, std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, const std::string& publisher_key,
+         GetPublisherInfoCallback callback) {
+        self->database()->GetPublisherInfo(
+            publisher_key, ToLegacyCallback(std::move(callback)));
+      },
+      publisher_key, std::move(callback));
 }
 
 void RewardsEngineImpl::GetPublisherPanelInfo(
     const std::string& publisher_key,
     GetPublisherPanelInfoCallback callback) {
-  WhenReady([this, publisher_key,
-             callback = ToLegacyCallback(std::move(callback))]() mutable {
-    publisher()->GetPublisherPanelInfo(publisher_key, std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, const std::string& publisher_key,
+         GetPublisherPanelInfoCallback callback) {
+        self->publisher()->GetPublisherPanelInfo(
+            publisher_key, ToLegacyCallback(std::move(callback)));
+      },
+      publisher_key, std::move(callback));
 }
 
 void RewardsEngineImpl::SavePublisherInfo(
     uint64_t window_id,
     mojom::PublisherInfoPtr publisher_info,
     SavePublisherInfoCallback callback) {
-  WhenReady([this, window_id, info = std::move(publisher_info),
-             callback = ToLegacyCallback(std::move(callback))]() mutable {
-    publisher()->SavePublisherInfo(window_id, std::move(info),
-                                   std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, uint64_t window_id,
+         mojom::PublisherInfoPtr publisher_info,
+         SavePublisherInfoCallback callback) {
+        self->publisher()->SavePublisherInfo(
+            window_id, std::move(publisher_info),
+            ToLegacyCallback(std::move(callback)));
+      },
+      window_id, std::move(publisher_info), std::move(callback));
 }
 
 void RewardsEngineImpl::SetInlineTippingPlatformEnabled(
     mojom::InlineTipsPlatforms platform,
     bool enabled) {
-  WhenReady([this, platform, enabled]() {
-    state()->SetInlineTippingPlatformEnabled(platform, enabled);
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, mojom::InlineTipsPlatforms platform,
+         bool enabled) {
+        self->state()->SetInlineTippingPlatformEnabled(platform, enabled);
+      },
+      platform, enabled);
 }
 
 void RewardsEngineImpl::GetInlineTippingPlatformEnabled(
@@ -573,34 +658,39 @@ void RewardsEngineImpl::GetShareURL(
 }
 
 void RewardsEngineImpl::FetchBalance(FetchBalanceCallback callback) {
-  WhenReady([this, callback = std::move(callback)]() mutable {
-    wallet()->FetchBalance(std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, FetchBalanceCallback callback) {
+        self->wallet()->FetchBalance(std::move(callback));
+      },
+      std::move(callback));
 }
 
 void RewardsEngineImpl::GetExternalWallet(const std::string& wallet_type,
                                           GetExternalWalletCallback callback) {
-  WhenReady([this, wallet_type, callback = std::move(callback)]() mutable {
-    if (wallet_type == constant::kWalletBitflyer) {
-      return bitflyer()->GetWallet(std::move(callback));
-    }
+  WhenReady(
+      [](RewardsEngineImpl* self, const std::string& wallet_type,
+         GetExternalWalletCallback callback) {
+        if (wallet_type == constant::kWalletBitflyer) {
+          return self->bitflyer()->GetWallet(std::move(callback));
+        }
 
-    if (wallet_type == constant::kWalletGemini) {
-      return gemini()->GetWallet(std::move(callback));
-    }
+        if (wallet_type == constant::kWalletGemini) {
+          return self->gemini()->GetWallet(std::move(callback));
+        }
 
-    if (wallet_type == constant::kWalletUphold) {
-      return uphold()->GetWallet(std::move(callback));
-    }
+        if (wallet_type == constant::kWalletUphold) {
+          return self->uphold()->GetWallet(std::move(callback));
+        }
 
-    if (wallet_type == constant::kWalletZebPay) {
-      return zebpay()->GetWallet(std::move(callback));
-    }
+        if (wallet_type == constant::kWalletZebPay) {
+          return self->zebpay()->GetWallet(std::move(callback));
+        }
 
-    NOTREACHED() << "Unknown external wallet type!";
-    std::move(callback).Run(
-        base::unexpected(mojom::GetExternalWalletError::kUnexpected));
-  });
+        NOTREACHED() << "Unknown external wallet type!";
+        std::move(callback).Run(
+            base::unexpected(mojom::GetExternalWalletError::kUnexpected));
+      },
+      wallet_type, std::move(callback));
 }
 
 void RewardsEngineImpl::ConnectExternalWallet(
@@ -608,76 +698,96 @@ void RewardsEngineImpl::ConnectExternalWallet(
     const base::flat_map<std::string, std::string>& args,
     ConnectExternalWalletCallback callback) {
   WhenReady(
-      [this, wallet_type, args, callback = std::move(callback)]() mutable {
+      [](RewardsEngineImpl* self, const std::string& wallet_type,
+         const base::flat_map<std::string, std::string>& args,
+         ConnectExternalWalletCallback callback) {
         if (wallet_type == constant::kWalletBitflyer) {
-          return bitflyer()->ConnectWallet(args, std::move(callback));
+          return self->bitflyer()->ConnectWallet(args, std::move(callback));
         }
 
         if (wallet_type == constant::kWalletGemini) {
-          return gemini()->ConnectWallet(args, std::move(callback));
+          return self->gemini()->ConnectWallet(args, std::move(callback));
         }
 
         if (wallet_type == constant::kWalletUphold) {
-          return uphold()->ConnectWallet(args, std::move(callback));
+          return self->uphold()->ConnectWallet(args, std::move(callback));
         }
 
         if (wallet_type == constant::kWalletZebPay) {
-          return zebpay()->ConnectWallet(args, std::move(callback));
+          return self->zebpay()->ConnectWallet(args, std::move(callback));
         }
 
         NOTREACHED() << "Unknown external wallet type!";
         std::move(callback).Run(
             base::unexpected(mojom::ConnectExternalWalletError::kUnexpected));
-      });
+      },
+      wallet_type, args, std::move(callback));
 }
 
 void RewardsEngineImpl::GetTransactionReport(
     mojom::ActivityMonth month,
     int year,
     GetTransactionReportCallback callback) {
-  WhenReady([this, month, year,
-             callback = ToLegacyCallback(std::move(callback))]() mutable {
-    database()->GetTransactionReport(month, year, std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, mojom::ActivityMonth month, int year,
+         GetTransactionReportCallback callback) {
+        self->database()->GetTransactionReport(
+            month, year, ToLegacyCallback(std::move(callback)));
+      },
+      month, year, std::move(callback));
 }
 
 void RewardsEngineImpl::GetContributionReport(
     mojom::ActivityMonth month,
     int year,
     GetContributionReportCallback callback) {
-  WhenReady([this, month, year,
-             callback = ToLegacyCallback(std::move(callback))]() mutable {
-    database()->GetContributionReport(month, year, std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, mojom::ActivityMonth month, int year,
+         GetContributionReportCallback callback) {
+        self->database()->GetContributionReport(
+            month, year, ToLegacyCallback(std::move(callback)));
+      },
+      month, year, std::move(callback));
 }
 
 void RewardsEngineImpl::GetAllContributions(
     GetAllContributionsCallback callback) {
-  WhenReady([this, callback = ToLegacyCallback(std::move(callback))]() mutable {
-    database()->GetAllContributions(std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, GetAllContributionsCallback callback) {
+        self->database()->GetAllContributions(
+            ToLegacyCallback(std::move(callback)));
+      },
+      std::move(callback));
 }
 
 void RewardsEngineImpl::GetMonthlyReport(mojom::ActivityMonth month,
                                          int year,
                                          GetMonthlyReportCallback callback) {
-  WhenReady([this, month, year,
-             callback = ToLegacyCallback(std::move(callback))]() mutable {
-    report()->GetMonthly(month, year, std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, mojom::ActivityMonth month, int year,
+         GetMonthlyReportCallback callback) {
+        self->report()->GetMonthly(month, year,
+                                   ToLegacyCallback(std::move(callback)));
+      },
+      month, year, std::move(callback));
 }
 
 void RewardsEngineImpl::GetAllMonthlyReportIds(
     GetAllMonthlyReportIdsCallback callback) {
-  WhenReady([this, callback = ToLegacyCallback(std::move(callback))]() mutable {
-    report()->GetAllMonthlyIds(std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, GetAllMonthlyReportIdsCallback callback) {
+        self->report()->GetAllMonthlyIds(ToLegacyCallback(std::move(callback)));
+      },
+      std::move(callback));
 }
 
 void RewardsEngineImpl::GetAllPromotions(GetAllPromotionsCallback callback) {
-  WhenReady([this, callback = ToLegacyCallback(std::move(callback))]() mutable {
-    database()->GetAllPromotions(std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, GetAllPromotionsCallback callback) {
+        self->database()->GetAllPromotions(
+            ToLegacyCallback(std::move(callback)));
+      },
+      std::move(callback));
 }
 
 void RewardsEngineImpl::Shutdown(ShutdownCallback callback) {
@@ -694,24 +804,29 @@ void RewardsEngineImpl::Shutdown(ShutdownCallback callback) {
 }
 
 void RewardsEngineImpl::GetEventLogs(GetEventLogsCallback callback) {
-  WhenReady([this, callback = ToLegacyCallback(std::move(callback))]() mutable {
-    database()->GetLastEventLogs(std::move(callback));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, GetEventLogsCallback callback) {
+        self->database()->GetLastEventLogs(
+            ToLegacyCallback(std::move(callback)));
+      },
+      std::move(callback));
 }
 
 void RewardsEngineImpl::GetRewardsWallet(GetRewardsWalletCallback callback) {
-  WhenReady([this, callback = std::move(callback)]() mutable {
-    auto rewards_wallet = wallet()->GetWallet();
-    if (rewards_wallet) {
-      // While the wallet creation flow is running, the Rewards wallet data may
-      // have a recovery seed without a payment ID. Only return a struct to the
-      // caller if it contains a payment ID.
-      if (rewards_wallet->payment_id.empty()) {
-        rewards_wallet = nullptr;
-      }
-    }
-    std::move(callback).Run(std::move(rewards_wallet));
-  });
+  WhenReady(
+      [](RewardsEngineImpl* self, GetRewardsWalletCallback callback) {
+        auto rewards_wallet = self->wallet()->GetWallet();
+        if (rewards_wallet) {
+          // While the wallet creation flow is running, the Rewards wallet data
+          // may have a recovery seed without a payment ID. Only return a struct
+          // to the caller if it contains a payment ID.
+          if (rewards_wallet->payment_id.empty()) {
+            rewards_wallet = nullptr;
+          }
+        }
+        std::move(callback).Run(std::move(rewards_wallet));
+      },
+      std::move(callback));
 }
 // mojom::RewardsEngine implementation end
 
@@ -825,13 +940,8 @@ void RewardsEngineImpl::OnInitialized(mojom::Result result,
     BLOG(0, "Failed to initialize wallet " << result);
   }
 
-  while (!ready_callbacks_.empty()) {
-    auto ready_callback = std::move(ready_callbacks_.front());
-    ready_callbacks_.pop();
-    ready_callback();
-  }
-
   ready_state_ = ReadyState::kReady;
+  ready_event_.Signal();
 
   callback(result);
 }
@@ -854,22 +964,11 @@ void RewardsEngineImpl::OnAllDone(mojom::Result result,
   database()->Close(std::move(callback));
 }
 
-template <typename T>
-void RewardsEngineImpl::WhenReady(T callback) {
-  switch (ready_state_) {
-    case ReadyState::kReady:
-      callback();
-      break;
-    case ReadyState::kShuttingDown:
-      NOTREACHED();
-      break;
-    default:
-      ready_callbacks_.push(std::function<void()>(
-          [shared_callback = std::make_shared<T>(std::move(callback))]() {
-            (*shared_callback)();
-          }));
-      break;
-  }
+template <typename F, typename... Args>
+void RewardsEngineImpl::WhenReady(F callback, Args&&... args) {
+  ready_event_.Post(FROM_HERE,
+                    base::BindOnce(std::move(callback), base::Unretained(this),
+                                   std::forward<Args>(args)...));
 }
 
 }  // namespace brave_rewards::internal
