@@ -33,8 +33,8 @@ class BraveAdsDatabaseMigrationTest
 
 TEST_P(BraveAdsDatabaseMigrationTest, MigrateFromSchema) {
   // Arrange
-  const AdInfo ad =
-      BuildAd(AdType::kNotificationAd, /*should_use_random_uuids*/ true);
+  const AdInfo ad = BuildAdForTesting(AdType::kNotificationAd,
+                                      /*should_use_random_uuids*/ true);
   const AdEventInfo ad_event =
       BuildAdEvent(ad, ConfirmationType::kViewed, /*created_at*/ Now());
 
