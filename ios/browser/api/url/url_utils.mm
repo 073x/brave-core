@@ -7,7 +7,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
-#include "brave/components/query_filter/utils.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
@@ -95,27 +94,6 @@ std::string GetRegistry(const GURL& url) {
 - (bool)brave_hasScheme:(NSString*)scheme {
   return net::GURLWithNSURL(self).SchemeIs(
       base::SysNSStringToUTF8([scheme lowercaseString]));
-}
-
-- (nullable NSURL*)
-    brave_stripTrackerParamsUsingInitiatorURL:(NSURL*)initiatorURL
-                            redirectSourceURL:(NSURL*)redirectSourceURL
-                                requestMethod:(NSString*)requestMethod
-                           isInternalRedirect:(BOOL)isInternalRedirect {
-  GURL initiator_url = net::GURLWithNSURL(initiatorURL);
-  GURL redirect_source_url = net::GURLWithNSURL(redirectSourceURL);
-  GURL request_url = net::GURLWithNSURL(self);
-  const auto request_method = base::SysNSStringToUTF8(requestMethod);
-
-  auto filtered_url = query_filter::MaybeApplyQueryStringFilter(
-      initiator_url, redirect_source_url, request_url, request_method,
-      isInternalRedirect);
-
-  if (filtered_url.has_value()) {
-    return net::NSURLWithGURL(filtered_url.value());
-  } else {
-    return nullptr;
-  }
 }
 @end
 

@@ -143,6 +143,11 @@ absl::optional<GURL> MaybeApplyQueryStringFilter(
     const GURL& request_url,
     const std::string& request_method,
     const bool internal_redirect) {
+  if (!request_url.has_query()) {
+    // Optimization:
+    // If there are no query params then we have nothing to strip.
+    return absl::nullopt;
+  }
   if (request_method != "GET") {
     return absl::nullopt;
   }
