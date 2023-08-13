@@ -8,55 +8,49 @@
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base_util.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_current_test_util.h"
+#include "brave/components/brave_ads/core/internal/common/unittest/unittest_pref.h"
 
 namespace brave_ads {
 
-void SetDefaultBooleanPref(const std::string& path, const bool value) {
-  const std::string uuid = GetUuidForCurrentTestAndValue(path);
-  Prefs()[uuid] = base::NumberToString(static_cast<int>(value));
+void SetBooleanPref(const std::string& path, const bool default_value) {
+  SetPref(path, base::NumberToString(static_cast<int>(default_value)));
 }
 
-void SetDefaultIntegerPref(const std::string& path, const int value) {
-  const std::string uuid = GetUuidForCurrentTestAndValue(path);
-  Prefs()[uuid] = base::NumberToString(value);
+void SetIntegerPref(const std::string& path, const int default_value) {
+  SetPref(path, base::NumberToString(static_cast<int>(default_value)));
 }
 
-void SetDefaultDoublePref(const std::string& path, const double value) {
-  const std::string uuid = GetUuidForCurrentTestAndValue(path);
-  Prefs()[uuid] = base::NumberToString(value);
+void SetDoublePref(const std::string& path, const double default_value) {
+  SetPref(path, base::NumberToString(static_cast<int>(default_value)));
 }
 
-void SetDefaultStringPref(const std::string& path, const std::string& value) {
-  const std::string uuid = GetUuidForCurrentTestAndValue(path);
-  Prefs()[uuid] = value;
+void SetStringPref(const std::string& path, const std::string& default_value) {
+  SetPref(path, default_value);
 }
 
-void SetDefaultInt64Pref(const std::string& path, const int64_t value) {
-  const std::string uuid = GetUuidForCurrentTestAndValue(path);
-  Prefs()[uuid] = base::NumberToString(value);
+void SetInt64Pref(const std::string& path, const int64_t default_value) {
+  SetPref(path, base::NumberToString(static_cast<int>(default_value)));
 }
 
-void SetDefaultUint64Pref(const std::string& path, const uint64_t value) {
-  const std::string uuid = GetUuidForCurrentTestAndValue(path);
-  Prefs()[uuid] = base::NumberToString(value);
+void SetUint64Pref(const std::string& path, const uint64_t default_value) {
+  SetPref(path, base::NumberToString(static_cast<int>(default_value)));
 }
 
-void SetDefaultDictPref(const std::string& path, base::Value::Dict value) {
-  const std::string uuid = GetUuidForCurrentTestAndValue(path);
-  CHECK(base::JSONWriter::Write(value, &Prefs()[uuid]));
+void SetDictPref(const std::string& path, base::Value::Dict default_value) {
+  std::string json;
+  CHECK(base::JSONWriter::Write(default_value, &json));
+  SetPref(path, json);
 }
 
-void SetDefaultListPref(const std::string& path, base::Value::List value) {
-  const std::string uuid = GetUuidForCurrentTestAndValue(path);
-  CHECK(base::JSONWriter::Write(value, &Prefs()[uuid]));
+void SetListPref(const std::string& path, base::Value::List default_value) {
+  std::string json;
+  CHECK(base::JSONWriter::Write(default_value, &json));
+  SetPref(path, json);
 }
 
-void SetDefaultTimePref(const std::string& path, const base::Time value) {
-  const std::string uuid = GetUuidForCurrentTestAndValue(path);
-  Prefs()[uuid] =
-      base::NumberToString(value.ToDeltaSinceWindowsEpoch().InMicroseconds());
+void SetTimePref(const std::string& path, const base::Time default_value) {
+  SetPref(path, base::NumberToString(
+                    default_value.ToDeltaSinceWindowsEpoch().InMicroseconds()));
 }
 
 }  // namespace brave_ads
