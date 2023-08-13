@@ -110,8 +110,8 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.informers.BraveAndroidSyncDisabledInformer;
 import org.chromium.chrome.browser.informers.BraveSyncAccountDeletedInformer;
-import org.chromium.chrome.browser.misc_metrics.PrivacyHubMetricsConnectionErrorHandler;
-import org.chromium.chrome.browser.misc_metrics.PrivacyHubMetricsFactory;
+import org.chromium.chrome.browser.misc_metrics.MiscAndroidMetricsConnectionErrorHandler;
+import org.chromium.chrome.browser.misc_metrics.MiscAndroidMetricsFactory;
 import org.chromium.chrome.browser.notifications.BraveNotificationWarningDialog;
 import org.chromium.chrome.browser.notifications.BravePermissionUtils;
 import org.chromium.chrome.browser.notifications.permissions.NotificationPermissionController;
@@ -184,7 +184,7 @@ import org.chromium.components.safe_browsing.BraveSafeBrowsingApiHandler;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.misc_metrics.mojom.PrivacyHubMetrics;
+import org.chromium.misc_metrics.mojom.MiscAndroidMetrics;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.ui.widget.Toast;
@@ -206,8 +206,8 @@ public abstract class BraveActivity extends ChromeActivity
                    OnBraveSetDefaultBrowserListener, ConnectionErrorHandler, PrefObserver,
                    BraveSafeBrowsingApiHandler.BraveSafeBrowsingApiHandlerDelegate,
                    BraveNewsConnectionErrorHandler.BraveNewsConnectionErrorHandlerDelegate,
-                   PrivacyHubMetricsConnectionErrorHandler
-                           .PrivacyHubMetricsConnectionErrorHandlerDelegate {
+                   MiscAndroidMetricsConnectionErrorHandler
+                           .MiscAndroidMetricsConnectionErrorHandlerDelegate {
     public static final String BRAVE_BUY_URL = "brave://wallet/fund-wallet";
     public static final String BRAVE_SEND_URL = "brave://wallet/send";
     public static final String BRAVE_SWAP_URL = "brave://wallet/swap";
@@ -255,7 +255,7 @@ public abstract class BraveActivity extends ChromeActivity
     private BraveWalletService mBraveWalletService;
     private KeyringService mKeyringService;
     private JsonRpcService mJsonRpcService;
-    private PrivacyHubMetrics mPrivacyHubMetrics;
+    private MiscAndroidMetrics mMiscAndroidMetrics;
     private SwapService mSwapService;
     private WalletModel mWalletModel;
     private BlockchainRegistry mBlockchainRegistry;
@@ -274,7 +274,7 @@ public abstract class BraveActivity extends ChromeActivity
     private NotificationPermissionController mNotificationPermissionController;
     private BraveNewsController mBraveNewsController;
     private BraveNewsConnectionErrorHandler mBraveNewsConnectionErrorHandler;
-    private PrivacyHubMetricsConnectionErrorHandler mPrivacyHubMetricsConnectionErrorHandler;
+    private MiscAndroidMetricsConnectionErrorHandler mMiscAndroidMetricsConnectionErrorHandler;
 
     /**
      * Serves as a general exception for failed attempts to get BraveActivity.
@@ -433,7 +433,7 @@ public abstract class BraveActivity extends ChromeActivity
         super.onDestroyInternal();
         cleanUpBraveNewsController();
         cleanUpWalletNativeServices();
-        cleanUpPrivacyHubMetrics();
+        cleanUpMiscAndroidMetrics();
     }
 
     public WalletModel getWalletModel() {
@@ -1346,8 +1346,8 @@ public abstract class BraveActivity extends ChromeActivity
         startActivity(braveWalletIntent);
     }
 
-    public PrivacyHubMetrics getPrivacyHubMetrics() {
-        return mPrivacyHubMetrics;
+    public MiscAndroidMetrics getMiscAndroidMetrics() {
+        return mMiscAndroidMetrics;
     }
 
     private void checkForYandexSE() {
@@ -1984,19 +1984,19 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     @Override
-    public void initPrivacyHubMetrics() {
-        if (mPrivacyHubMetrics != null) {
+    public void initMiscAndroidMetrics() {
+        if (mMiscAndroidMetrics != null) {
             return;
         }
-        if (mPrivacyHubMetricsConnectionErrorHandler == null) {
-            mPrivacyHubMetricsConnectionErrorHandler =
-                    PrivacyHubMetricsConnectionErrorHandler.getInstance();
-            mPrivacyHubMetricsConnectionErrorHandler.setDelegate(this);
+        if (mMiscAndroidMetricsConnectionErrorHandler == null) {
+            mMiscAndroidMetricsConnectionErrorHandler =
+                    MiscAndroidMetricsConnectionErrorHandler.getInstance();
+            mMiscAndroidMetricsConnectionErrorHandler.setDelegate(this);
         }
 
-        mPrivacyHubMetrics = PrivacyHubMetricsFactory.getInstance().getMetricsService(
-                mPrivacyHubMetricsConnectionErrorHandler);
-        mPrivacyHubMetrics.recordEnabledStatus(
+        mMiscAndroidMetrics = MiscAndroidMetricsFactory.getInstance().getMetricsService(
+                mMiscAndroidMetricsConnectionErrorHandler);
+        mMiscAndroidMetrics.recordPrivacyHubEnabledStatus(
                 OnboardingPrefManager.getInstance().isBraveStatsEnabled());
     }
 
@@ -2016,7 +2016,7 @@ public abstract class BraveActivity extends ChromeActivity
         initBraveWalletService();
         initKeyringService();
         initJsonRpcService();
-        initPrivacyHubMetrics();
+        initMiscAndroidMetrics();
         initSwapService();
         setupWalletModel();
     }
@@ -2042,9 +2042,9 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     @Override
-    public void cleanUpPrivacyHubMetrics() {
-        if (mPrivacyHubMetrics != null) mPrivacyHubMetrics.close();
-        mPrivacyHubMetrics = null;
+    public void cleanUpMiscAndroidMetrics() {
+        if (mMiscAndroidMetrics != null) mMiscAndroidMetrics.close();
+        mMiscAndroidMetrics = null;
     }
 
     @NonNull

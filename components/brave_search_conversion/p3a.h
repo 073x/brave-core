@@ -17,11 +17,17 @@ namespace p3a {
 constexpr char kSearchPromoButtonHistogramName[] = "Brave.Search.Promo.Button";
 constexpr char kSearchPromoBannerHistogramName[] = "Brave.Search.Promo.Banner";
 constexpr char kSearchPromoNTPHistogramName[] = "Brave.Search.Promo.NewTabPage";
+constexpr char kSearchQueriesBeforeChurnHistogramName[] =
+    "Brave.Search.QueriesBeforeChurn";
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
 void RecordPromoShown(PrefService* prefs, ConversionType type);
 void RecordPromoTrigger(PrefService* prefs, ConversionType type);
-void RecordDefaultEngineChange(PrefService* prefs);
+
+void RecordLocationBarQuery(PrefService* prefs);
+void RecordDefaultEngineConversion(PrefService* prefs);
+void RecordDefaultEngineChurn(PrefService* prefs);
 
 }  // namespace p3a
 }  // namespace brave_search_conversion

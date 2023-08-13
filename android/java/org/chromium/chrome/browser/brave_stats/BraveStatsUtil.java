@@ -108,7 +108,7 @@ public class BraveStatsUtil {
                     BraveStatsBottomSheetDialogFragment.newInstance();
             braveStatsBottomSheetDialogFragment.show(
                     activity.getSupportFragmentManager(), STATS_FRAGMENT_TAG);
-            activity.getPrivacyHubMetrics().recordView();
+            activity.getMiscAndroidMetrics().recordPrivacyHubView();
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e(TAG, "showBraveStats " + e);
         }

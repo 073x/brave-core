@@ -26,8 +26,13 @@ constexpr char kP3AButtonTriggered[] =
 constexpr char kP3ANTPTriggered[] =
     "brave.brave_search_conversion.ntp_triggered";
 
-constexpr char kP3ADefaultEngineChanged[] =
+constexpr char kP3ADefaultEngineConverted[] =
     "brave.brave_search_conversion.default_changed";
+
+const char kP3AQueryCountBeforeChurn[] =
+    "brave.brave_search_conversion.query_count";
+const char kP3AAlreadyChurned[] =
+    "brave.brave_search_conversion.already_churned";
 
 }  // namespace prefs
 }  // namespace brave_search_conversion
