@@ -3,7 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include "brave/ios/browser/api/query_filter/query_filter_utils.h"
+#include "brave/ios/browser/api/query_filter/utils.h"
+
 #include "base/strings/sys_string_conversions.h"
 #include "brave/components/query_filter/utils.h"
 #import "net/base/mac/url_conversions.h"
@@ -18,33 +19,34 @@
 @implementation NSURL (QueryFilterUtilities)
 
 - (nullable NSURL*)
-    brave_stripTrackerParamsUsingInitiatorURL:(/*nullable*/ NSURL*)initiatorURL
-                            redirectSourceURL:
-                                (/*nullable*/ NSURL*)redirectSourceURL
-                                requestMethod:(NSString*)requestMethod
-                           isInternalRedirect:(BOOL)isInternalRedirect {
+    brave_applyingQueryStringFilterWithInitiatorURL:
+        (/*nullable*/ NSURL*)initiatorURL
+                                  redirectSourceURL:
+                                      (/*nullable*/ NSURL*)redirectSourceURL
+                                      requestMethod:(NSString*)requestMethod
+                                 isInternalRedirect:(BOOL)isInternalRedirect {
   // Create new fake gurls because thats what
   // `query_filter::MaybeApplyQueryStringFilter` expects
-  GURL initiator_url;
-  GURL redirect_source_url;
+  GURL initiatorGURL;
+  GURL redirectSourceGurl;
 
   // Set the actual initiator and redirect source urls if we have them
   if (initiatorURL != nil) {
-    initiator_url = net::GURLWithNSURL(initiatorURL);
+    initiatorGURL = net::GURLWithNSURL(initiatorURL);
   }
   if (redirectSourceURL != nil) {
-    redirect_source_url = net::GURLWithNSURL(redirectSourceURL);
+    redirectSourceGurl = net::GURLWithNSURL(redirectSourceURL);
   }
 
-  GURL request_url = net::GURLWithNSURL(self);
-  const auto request_method = base::SysNSStringToUTF8(requestMethod);
+  GURL requestGurl = net::GURLWithNSURL(self);
+  const auto method = base::SysNSStringToUTF8(requestMethod);
 
-  auto filtered_url = query_filter::MaybeApplyQueryStringFilter(
-      initiator_url, redirect_source_url, request_url, request_method,
+  auto filteredGURL = query_filter::MaybeApplyQueryStringFilter(
+      initiatorGURL, redirectSourceGurl, requestGurl, method,
       isInternalRedirect);
 
-  if (filtered_url.has_value()) {
-    return net::NSURLWithGURL(filtered_url.value());
+  if (filteredGURL.has_value()) {
+    return net::NSURLWithGURL(filteredGURL.value());
   } else {
     return nullptr;
   }
