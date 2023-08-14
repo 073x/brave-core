@@ -22,6 +22,7 @@
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "brave/browser/brave_vpn/win/brave_vpn_wireguard_service/status_tray/brave_vpn_tray_command_ids.h"
+#include "brave/browser/brave_vpn/win/brave_vpn_wireguard_service/status_tray/notification_utils.h"
 #include "brave/browser/brave_vpn/win/brave_vpn_wireguard_service/status_tray/resources/resource.h"
 #include "brave/browser/brave_vpn/win/brave_vpn_wireguard_service/status_tray/status_icon/icon_utils.h"
 #include "brave/browser/brave_vpn/win/brave_vpn_wireguard_service/status_tray/status_icon/status_icon.h"
@@ -241,13 +242,14 @@ HRESULT StatusTrayRunner::Run() {
   if (!wireguard::GetLastUsedConfigPath().has_value() ||
       StatusTray::IconWindowExists() || !wireguard::IsVPNTrayIconEnabled() ||
       !wireguard::IsWireguardActive()) {
-    return S_OK;
+    // return S_OK;
   }
 
   base::SingleThreadTaskExecutor task_executor(base::MessagePumpType::UI);
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
       "Brave VPN Wireguard status tray process");
-
+  auto notification = ShowConnectedNotification();
+  CHECK(notification.Get());
   auto pak_path = GetResourcesPakFilePath(base::i18n::GetConfiguredLocale());
   if (!base::PathExists(pak_path)) {
     pak_path = GetResourcesPakFilePath("en-US");
