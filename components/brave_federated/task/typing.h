@@ -29,9 +29,9 @@ struct TaskId {
 
 class Task {
  public:
-  Task(const TaskId& task_id,
-       const TaskType& type,
-       const std::string& token,
+  Task(TaskId task_id,
+       TaskType type,
+       std::string token,
        const std::vector<Weights>& parameters,
        const std::map<std::string, float>& config);
   Task(const Task& other);
@@ -53,24 +53,24 @@ class Task {
 
 class TaskResult {
  public:
-  TaskResult(const Task& task, const PerformanceReport& report);
+  TaskResult(const Task& task, const PerformanceReportInfo& report);
   TaskResult(const TaskResult& other);
   ~TaskResult();
 
   const Task& GetTask() const;
-  const PerformanceReport& GetReport() const;
+  const PerformanceReportInfo& GetReport() const;
 
  private:
   const Task task_;
-  const PerformanceReport report_;
+  const PerformanceReportInfo report_;
 };
 
 class TaskResultResponse {
  public:
   explicit TaskResultResponse(bool success);
-  ~TaskResultResponse();
+  ~TaskResultResponse() = default;
 
-  bool IsSuccessful();
+  bool IsSuccessful() const;
 
  private:
   const bool success_;

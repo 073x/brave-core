@@ -5,8 +5,9 @@
 
 #include "brave/components/brave_federated/config_utils.h"
 
+#include "base/files/file_util.h"
 #include "base/json/json_reader.h"
-#include "brave/components/brave_federated/api/config.h"
+#include "base/strings/string_number_conversions.h"
 #include "brave/components/brave_federated/features.h"
 
 namespace brave_federated {
@@ -78,19 +79,19 @@ void LearningServiceConfig::InitServiceConfigFromJSONString(
   const auto& reconnect_policy = config->reconnect_policy;
   const auto& request_task_policy = config->request_task_policy;
   const auto& post_results_policy = config->post_results_policy;
-  copyModelSpec(config->model_spec, model_spec_);
+  CopyModelSpec(config->model_spec, model_spec_);
 
   // Convert api::config::BackoffPolicy to BackoffEntry::Policy
   // parent class
-  convertPolicy<api::config::BackoffPolicy, net::BackoffEntry::Policy>(
+  ConvertPolicy<api::config::BackoffPolicy, net::BackoffEntry::Policy>(
       reconnect_policy, reconnect_policy_);
-  convertPolicy<api::config::BackoffPolicy, net::BackoffEntry::Policy>(
+  ConvertPolicy<api::config::BackoffPolicy, net::BackoffEntry::Policy>(
       request_task_policy, request_task_policy_);
-  convertPolicy<api::config::BackoffPolicy, net::BackoffEntry::Policy>(
+  ConvertPolicy<api::config::BackoffPolicy, net::BackoffEntry::Policy>(
       post_results_policy, post_results_policy_);
 }
 
-void LearningServiceConfig::copyModelSpec(const api::config::ModelSpec& src,
+void LearningServiceConfig::CopyModelSpec(const api::config::ModelSpec& src,
                                           api::config::ModelSpec& dst) {
   dst.num_params = src.num_params;
   dst.batch_size = src.batch_size;
@@ -100,7 +101,7 @@ void LearningServiceConfig::copyModelSpec(const api::config::ModelSpec& src,
 }
 
 template <typename S, typename T>
-void LearningServiceConfig::convertPolicy(const S& src, T& dst) {
+void LearningServiceConfig::ConvertPolicy(const S& src, T& dst) {
   dst.num_errors_to_ignore = src.num_errors_to_ignore;
   dst.initial_delay_ms = src.initial_delay_ms;
   dst.multiply_factor = src.multiply_factor;

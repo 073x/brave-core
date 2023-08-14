@@ -5,7 +5,6 @@
 
 #include "brave/components/brave_federated/adapters/flower_helper.h"
 
-#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -104,7 +103,7 @@ base::expected<TaskList, std::string> ParseTaskListFromResponseBody(
 
   TaskList task_list;
   for (int i = 0; i < response.task_ins_list_size(); i++) {
-    flower::TaskIns task_instruction = response.task_ins_list(i);
+    const flower::TaskIns& task_instruction = response.task_ins_list(i);
 
     auto task = ParseTask(task_instruction);
     if (!task.has_value()) {
@@ -121,10 +120,10 @@ base::expected<TaskList, std::string> ParseTaskListFromResponseBody(
 }
 
 std::string BuildUploadTaskResultsPayload(const TaskResult& result) {
-  const Task task = result.GetTask();
-  const TaskId task_id = task.GetId();
-  const TaskType task_type = task.GetType();
-  const PerformanceReport report = result.GetReport();
+  const Task& task = result.GetTask();
+  const TaskId& task_id = task.GetId();
+  const TaskType& task_type = task.GetType();
+  const PerformanceReportInfo& report = result.GetReport();
 
   flower::Task flower_task;
 
@@ -132,7 +131,7 @@ std::string BuildUploadTaskResultsPayload(const TaskResult& result) {
   switch (task_type) {
     case TaskType::kTraining: {
       flower::ClientMessage_FitRes fit_res;
-      fit_res.set_num_examples(report.dataset_size);
+      fit_res.set_num_examples(static_cast<int64_t>(report.dataset_size));
       *fit_res.mutable_parameters() =
           GetParametersFromVectors(report.parameters);
       if (!report.metrics.empty()) {
@@ -143,7 +142,7 @@ std::string BuildUploadTaskResultsPayload(const TaskResult& result) {
     }
     case TaskType::kEvaluation: {
       flower::ClientMessage_EvaluateRes eval_res;
-      eval_res.set_num_examples(report.dataset_size);
+      eval_res.set_num_examples(static_cast<int64_t>(report.dataset_size));
       eval_res.set_loss(report.loss);
       if (!report.metrics.empty()) {
         *eval_res.mutable_metrics() = MetricsToProto(report.metrics);

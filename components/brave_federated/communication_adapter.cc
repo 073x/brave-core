@@ -5,6 +5,7 @@
 
 #include "brave/components/brave_federated/communication_adapter.h"
 
+#include <functional>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -13,7 +14,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "brave/components/brave_federated/adapters/flower_helper.h"
-#include "brave/components/brave_federated/features.h"
 #include "brave/components/brave_federated/task/typing.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
@@ -23,7 +23,6 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace brave_federated {
@@ -106,12 +105,30 @@ void CommunicationAdapter::GetTasks(GetTaskCallback callback) {
   url_loader_->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&CommunicationAdapter::OnGetTasks,
-                     weak_factory_.GetWeakPtr(), std::move(callback)),
+                     weak_factory_.GetWeakPtr(), std::ref(callback)),
+      kMaxFederatedServerResponseSizeBytes);
+}
+
+void CommunicationAdapter::UploadTaskResult(const TaskResult& result,
+                                            UploadResultCallback callback) {
+  auto request = MakeResourceRequest();
+  VLOG(2) << "FL: Posting Task results " << request->method << " "
+          << request->url;
+
+  const std::string payload = BuildUploadTaskResultsPayload(result);
+
+  url_loader_ = network::SimpleURLLoader::Create(
+      std::move(request), GetNetworkTrafficAnnotationTag());
+  url_loader_->AttachStringForUpload(payload, "application/protobuf");
+  url_loader_->DownloadToString(
+      url_loader_factory_.get(),
+      base::BindOnce(&CommunicationAdapter::OnUploadTaskResult,
+                     weak_factory_.GetWeakPtr(), std::ref(callback)),
       kMaxFederatedServerResponseSizeBytes);
 }
 
 void CommunicationAdapter::OnGetTasks(
-    GetTaskCallback callback,
+    GetTaskCallback& callback,
     const std::unique_ptr<std::string> response_body) {
   CHECK(url_loader_);
   CHECK(url_loader_->ResponseInfo());
@@ -153,26 +170,8 @@ void CommunicationAdapter::OnGetTasks(
   VLOG(2) << "FL: Failed to request tasks. Response code: " << response_code;
 }
 
-void CommunicationAdapter::UploadTaskResult(const TaskResult& result,
-                                            UploadResultCallback callback) {
-  auto request = MakeResourceRequest();
-  VLOG(2) << "FL: Posting Task results " << request->method << " "
-          << request->url;
-
-  const std::string payload = BuildUploadTaskResultsPayload(result);
-
-  url_loader_ = network::SimpleURLLoader::Create(
-      std::move(request), GetNetworkTrafficAnnotationTag());
-  url_loader_->AttachStringForUpload(payload, "application/protobuf");
-  url_loader_->DownloadToString(
-      url_loader_factory_.get(),
-      base::BindOnce(&CommunicationAdapter::OnUploadTaskResult,
-                     weak_factory_.GetWeakPtr(), std::move(callback)),
-      kMaxFederatedServerResponseSizeBytes);
-}
-
 void CommunicationAdapter::OnUploadTaskResult(
-    UploadResultCallback callback,
+    UploadResultCallback& callback,
     std::unique_ptr<std::string> response_body) {
   CHECK(url_loader_);
   CHECK(url_loader_->ResponseInfo());

@@ -22,6 +22,18 @@
 
 namespace brave_federated {
 
+namespace {
+
+bool IsFederatedLearningEnabled() {
+  return brave_federated::features::IsFederatedLearningEnabled();
+}
+
+bool IsOperationalPatternsEnabled() {
+  return brave_federated::features::IsOperationalPatternsEnabled();
+}
+
+}  // namespace
+
 BraveFederatedService::BraveFederatedService(
     PrefService* prefs,
     PrefService* local_state,
@@ -30,7 +42,7 @@ BraveFederatedService::BraveFederatedService(
     : prefs_(prefs),
       local_state_(local_state),
       browser_context_path_(browser_context_path),
-      url_loader_factory_(url_loader_factory) {
+      url_loader_factory_(std::move(url_loader_factory)) {
   Init();
 }
 
@@ -75,14 +87,6 @@ void BraveFederatedService::OnPreferenceChanged(const std::string& pref_name) {
   if (pref_name == p3a::kP3AEnabled) {
     MaybeStartOrStopOperationalPatterns();
   }
-}
-
-bool BraveFederatedService::IsFederatedLearningEnabled() {
-  return brave_federated::features::IsFederatedLearningEnabled();
-}
-
-bool BraveFederatedService::IsOperationalPatternsEnabled() {
-  return brave_federated::features::IsOperationalPatternsEnabled();
 }
 
 bool BraveFederatedService::IsP3AEnabled() {

@@ -22,7 +22,7 @@ namespace {
 void DatabaseErrorCallback(sql::Database* db,
                            const base::FilePath& db_file_path,
                            int extended_error,
-                           sql::Statement* stmt) {
+                           sql::Statement* statement) {
   if (sql::Recovery::ShouldRecover(extended_error)) {
     // Prevent reentrant calls.
     db->reset_error_callback();
@@ -49,14 +49,14 @@ void BindCovariateToStatement(
     const brave_federated::mojom::CovariateInfo& covariate,
     int training_instance_id,
     base::Time created_at,
-    sql::Statement* stmt) {
-  CHECK(stmt);
+    sql::Statement* statement) {
+  CHECK(statement);
 
-  stmt->BindInt(0, training_instance_id);
-  stmt->BindInt(1, static_cast<int>(covariate.type));
-  stmt->BindInt(2, static_cast<int>(covariate.data_type));
-  stmt->BindString(3, covariate.value);
-  stmt->BindDouble(4, created_at.ToDoubleT());
+  statement->BindInt(0, training_instance_id);
+  statement->BindInt(1, static_cast<int>(covariate.type));
+  statement->BindInt(2, static_cast<int>(covariate.data_type));
+  statement->BindString(3, covariate.value);
+  statement->BindDouble(4, created_at.ToDoubleT());
 }
 
 }  // namespace

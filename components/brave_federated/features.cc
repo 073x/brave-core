@@ -83,7 +83,7 @@ int GetFederatedLearningUpdateCycleInSeconds() {
 }
 
 std::string GetFederatedLearningTaskEndpoint() {
-  const std::string task_endpoint = GetFieldTrialParamValueByFeature(
+  std::string task_endpoint = GetFieldTrialParamValueByFeature(
       kFederatedLearning, kFieldTrialParameterFederatedLearningTaskEndpoint);
 
   if (task_endpoint.empty()) {
@@ -93,7 +93,7 @@ std::string GetFederatedLearningTaskEndpoint() {
 }
 
 std::string GetFederatedLearningResultsEndpoint() {
-  const std::string results_endpoint = GetFieldTrialParamValueByFeature(
+  std::string results_endpoint = GetFieldTrialParamValueByFeature(
       kFederatedLearning, kFieldTrialParameterFederatedLearningResultsEndpoint);
 
   if (results_endpoint.empty()) {

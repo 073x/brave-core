@@ -8,13 +8,12 @@
 
 #include <string>
 
-#include "base/files/file_util.h"
-#include "base/json/json_value_converter.h"
-#include "base/strings/string_number_conversions.h"
-#include "brave/components/brave_federated/task/model.h"
+#include "base/files/file_path.h"
+#include "brave/components/brave_federated/api/config.h"
 #include "net/base/backoff_entry.h"
 
 namespace brave_federated {
+
 class LearningServiceConfig {
  public:
   LearningServiceConfig();
@@ -27,14 +26,14 @@ class LearningServiceConfig {
   api::config::ModelSpec& GetModelSpec();
 
  private:
-  net::BackoffEntry::Policy reconnect_policy_ = {};
-  net::BackoffEntry::Policy request_task_policy_ = {};
-  net::BackoffEntry::Policy post_results_policy_ = {};
-  api::config::ModelSpec model_spec_ = {};
-  void copyModelSpec(const api::config::ModelSpec& src,
-                     api::config::ModelSpec& dst);
+  net::BackoffEntry::Policy reconnect_policy_;
+  net::BackoffEntry::Policy request_task_policy_;
+  net::BackoffEntry::Policy post_results_policy_;
+  api::config::ModelSpec model_spec_;
+  static void CopyModelSpec(const api::config::ModelSpec& src,
+                            api::config::ModelSpec& dst);
   template <typename S, typename T>
-  void convertPolicy(const S& src, T& dst);
+  void ConvertPolicy(const S& src, T& dst);
 };
 
 }  // namespace brave_federated
