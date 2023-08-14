@@ -1,5 +1,5 @@
 diff --git a/components/omnibox/browser/autocomplete_controller.cc b/components/omnibox/browser/autocomplete_controller.cc
-index bbcb5de370e4b6648bd9d7aed431788c29d14cff..de8897e8337c8a5651c521299dcdafd7a32275f2 100644
+index 6b9ef61a0f278fbca7bcf7cb118c02183eaa5c84..fb0cc13b13086154fa5dd137754c092d42537d51 100644
 --- a/components/omnibox/browser/autocomplete_controller.cc
 +++ b/components/omnibox/browser/autocomplete_controller.cc
 @@ -859,6 +859,7 @@ void AutocompleteController::InitializeAsyncProviders(int provider_types) {
@@ -10,7 +10,7 @@ index bbcb5de370e4b6648bd9d7aed431788c29d14cff..de8897e8337c8a5651c521299dcdafd7
    }
    // Providers run in the order they're added.  Add `HistoryURLProvider` after
    // `SearchProvider` because:
-@@ -1145,6 +1146,7 @@ void AutocompleteController::SortCullAndAnnotateResult(
+@@ -1143,6 +1144,7 @@ void AutocompleteController::SortCullAndAnnotateResult(
      absl::optional<AutocompleteMatch> default_match_to_preserve) {
    result_.SortAndCull(input_, template_url_service_, triggered_feature_service_,
                        default_match_to_preserve);

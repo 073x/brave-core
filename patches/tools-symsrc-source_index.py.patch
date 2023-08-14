@@ -1,8 +1,8 @@
 diff --git a/tools/symsrc/source_index.py b/tools/symsrc/source_index.py
-index 536c5c5263980f639a05899e77bf1a21b6c0fe4e..b19bb9ad72c8293720c425e25e11b30c88300c2c 100755
+index cbad0fbeb8107be1e3afb0fc905cc0f6a5154674..370643e6fc41f47ce61fe017fd2dcd048f4c3dc3 100755
 --- a/tools/symsrc/source_index.py
 +++ b/tools/symsrc/source_index.py
-@@ -595,5 +595,6 @@ def main():
+@@ -597,5 +597,6 @@ def main():
    return 0
  
  
