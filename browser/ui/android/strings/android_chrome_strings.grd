@@ -746,7 +746,7 @@ CHAR_LIMIT guidelines:
         We’re changing how passwords are saved on this device
       </message>
       <message name="IDS_PASSWORD_MIGRATION_WARNING_SUBTITLE" desc="The subtitle of the password migration warning sheet." formatter_data="android_java">
-        Your lists of saved passwords for Brave and Brave <ph name="ERROR_DESCRIPTION">%1$s<ex>Dev</ex></ph> will merge after version 121. You’ll be able to autofill all your saved passwords on both apps.
+        Right now, passwords saved on this device cannot be used across Brave channels. After Brave 121, passwords saved on your device for Brave and <ph name="CHROME_CHANNEL">%1$s<ex>Brave Dev</ex></ph> will be merged and can be used in both apps.
       </message>
       <message name="IDS_PASSWORD_MIGRATION_WARNING_ACKNOWLEDGE" desc="The text on the button that acknowledges the password migration warning.">
         Got it
@@ -770,7 +770,7 @@ CHAR_LIMIT guidelines:
         Export &amp; delete passwords saved to this device
       </message>
       <message name="IDS_PASSWORD_MIGRATION_WARNING_PASSWORD_EXPORT_SUBTITLE" desc="The subtitle that explaint the password export option in the password migration warning sheet.">
-        All passwords will be downloaded on your device and removed from Brave <ph name="CHROME_CHANNEL">%1$s<ex>Dev</ex></ph>
+        All passwords will be downloaded on your device and removed from <ph name="CHROME_CHANNEL">%1$s<ex>Brave Dev</ex></ph>
       </message>
       <message name="IDS_PASSWORD_MIGRATION_WARNING_NEXT" desc="The text for the next button in the password migration warning sheet. It starts one of the flows offered on the sheet.">
         Next
@@ -781,11 +781,26 @@ CHAR_LIMIT guidelines:
       <message name="IDS_EXPORTED_PASSWORDS_DELETION_DIALOG_TITLE" desc="The title of the dialog that offers to delete passwords from Brave Password Manager." formatter_data="android_java">
         Delete passwords from Brave Password Manager?
       </message>
+      <message name="IDS_EXPORTED_PASSWORDS_DELETION_IN_PROGRESS_TITLE" desc="The title of the progress bar that is visible while the passwords are being deleted." formatter_data="android_java">
+        Deleting
+      </message>
+      <message name="IDS_PASSWORDS_EXPORT_IN_PROGRESS_TITLE" desc="The title of the progress bar that is visible while the passwords are being exported." formatter_data="android_java">
+        Exporting
+      </message>
       <message name="IDS_EXPORTED_PASSWORDS_DELETION_DIALOG_TEXT" desc="The text that describes the option to delete the passwords that were just exported." formatter_data="android_java">
-        Your passwords will be deleted from Brave Password Manager for Brave <ph name="CHROME_CHANNEL">%1$s<ex>Dev</ex></ph>. You will keep the passwords file you just downloaded.
+        Your passwords will be deleted from Brave Password Manager for <ph name="CHROME_CHANNEL">%1$s<ex>Brave Dev</ex></ph>. You will keep the passwords file you just downloaded.
       </message>
       <message name="IDS_EXPORTED_PASSWORDS_DELETE_BUTTON" desc="The text on the button that confirms the action of deleting the passwords that were exported." formatter_data="android_java">
         Delete passwords
+      </message>
+      <message name="IDS_CHROME_CHANNEL_NAME_CANARY" desc="The Brave channel name for canary channel">
+        Brave Canary
+      </message>
+      <message name="IDS_CHROME_CHANNEL_NAME_DEV" desc="The Brave channel name for dev channel">
+        Brave Dev
+      </message>
+      <message name="IDS_CHROME_CHANNEL_NAME_BETA" desc="The Brave channel name for beta channel">
+        Brave Beta
       </message>
 
       <!-- Lock Screen Fragment -->
@@ -2896,7 +2911,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         {FILE_COUNT, plural, =1 {# Page} other {# Pages}}
       </message>
       <message name="IDS_DOWNLOAD_PAGE" desc="Download this page.">
-        Download page
+        Download this page
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_NO_DOWNLOADS" desc="Text appearing on an empty tab that indicates that downloaded files appear on this tab.">
         Files that you download appear here
@@ -3557,7 +3572,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         New tab
       </message>
       <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_PREFERENCE_SHARE" desc="Title name for the share option in the preference.">
-        Share
+        Share this page
       </message>
       <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_PREFERENCE_VOICE_SEARCH" desc="Title name for the voice search option in the preference.">
         Voice search
@@ -4141,10 +4156,10 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Signed out. Opens dialog to sign in and turn on sync.
       </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_HOME" desc="Content description for the home button.">
-        Home
+        Open the home page
       </message>
       <message name="IDS_ACCESSIBILITY_BTN_REFRESH" desc="Content description for the refresh page button.">
-        Refresh page
+        Reload this page
       </message>
       <message name="IDS_ACCESSIBILITY_BTN_STOP_LOADING" desc="Content description for the stop loading page button.">
         Stop page loading
@@ -4382,6 +4397,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_PAGE_INSIGHTS_HUB_TITLE_TEXT" desc="The title of Page Insights Sheet.">
         Related Insights
+      </message>
+      <message name="IDS_PAGE_INSIGHTS_BACK_BUTTON_DESCRIPTION" desc="The content description of back button in page insights sheet.">
+        Page insights back button
       </message>
 
       <!-- WebFeed -->
@@ -5629,7 +5647,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         chrome_stylized_highlight_
       </message>
       <message name="IDS_CONTENT_CREATION_NOTE_TEMPLATE_SELECTED" desc="Announcment string for accessibility when selected template changes.">
-        <ph name="TEMPLATE_TITLE">%1$s<ex>Classic</ex> template selected</ph>
+        <ph name="TEMPLATE_TITLE">%1$s<ex>Classic</ex></ph> template selected
       </message>
       <message name="IDS_CONTENT_CREATION_NOTE_DIALOG_DESCRIPTION" desc="Accessibility information for note template picking dialog.">
         Select a template for your highlight.
@@ -5827,6 +5845,20 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_PLEASE_WAIT_PROGRESS_MESSAGE" desc="Message on the progress dialog used when waiting for an operation to complete.">
         Please wait…
+      </message>
+
+      <!-- Read Aloud ("Listen to this page") player strings -->
+      <message name="IDS_READALOUD_CLOSE_PLAYER_BUTTON_CONTENT_DESCRIPTION" desc="Accessibility string for the button that closes the 'Listen to this page' player.">
+        Tap to close “Listen to this page”.
+      </message>
+      <message name="IDS_READALOUD_PLAYER_NAME" desc="Name of the Read Aloud player for accessiblity.">
+        “Listen to this page” player.
+      </message>
+      <message name="IDS_READALOUD_PLAYER_OPENED_AT_FULL_HEIGHT" desc="Accessibility string spoken when the 'Listen to this page' player bottom sheet expands to its full height.">
+        “Listen to this page” player opened at full height.
+      </message>
+      <message name="IDS_READALOUD_PLAYER_MINIMIZED" desc="Accessibility string spoken when the 'Listen to this page' player bottom sheet shrinks to its minimized height.">
+        “Listen to this page” player minimized.
       </message>
     </messages>
   </release>

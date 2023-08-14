@@ -3433,6 +3433,9 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_DESCRIPTION" desc="Description for the notifications status bubble, which is triggered when a user clicks on the blocked notifications icon in the omnibox.">
         Notifications are automatically blocked for all sites except ones you allow
       </message>
+      <message name="IDS_GEOLOCATION_QUIET_PERMISSION_BUBBLE_DESCRIPTION" desc="Description for the geolocation status bubble, which is triggered when a user clicks on the blocked geolocation icon in the omnibox.">
+        Location requests are automatically blocked for all sites except ones you allow
+      </message>
       <message name="IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ALLOW_BUTTON" desc="Text displayed on a button that enables notifications for a site. This button is part of the notifications status bubble, which is triggered when a user clicks on the blocked notifications icon in the omnibox.">
         Allow for this site
       </message>
@@ -7357,8 +7360,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_MODULES_DISMISS_BUTTON_TEXT" desc="Text shown on the disable button of an NTP module.">
         Hide <ph name="MODULE_TITLE">$1<ex>Office Chairs</ex></ph>
       </message>
-      <message name="IDS_NTP_MODULES_DISABLE_BUTTON_TEXT" desc="Text shown on the dismiss button of an NTP module.">
+      <message name="IDS_NTP_MODULES_DISABLE_BUTTON_TEXT" desc="Text shown on the disable button of an NTP module.">
         Never show <ph name="MODULE_NAME">$1<ex>shopping suggestions</ex></ph>
+      </message>
+      <message name="IDS_NTP_MODULES_DISABLE_BUTTON_TEXT_V2" desc="Text shown on the disable button of an NTP module.">
+        Don't show <ph name="MODULE_NAME">$1<ex>shopping suggestions</ex></ph>
       </message>
       <message name="IDS_NTP_MODULES_MORE_ACTIONS" desc="The tooltip and accessibility label for the 3 dot menu on a module.">
         More actions for <ph name="MODULE_NAME">$1<ex>shopping suggestions</ex></ph>
@@ -7684,11 +7690,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_MODULES_HISTORY_CLUSTERS_SENTENCE2" desc="Variant of the name of the History Clusters module in sentence case shown in various UIs.">
         Journeys
       </message>
+      <message name="IDS_NTP_MODULES_HISTORY_CLUSTERS_DISMISS_BUTTON" desc="A label for the dismiss button in the dropdown.">
+        No longer interested
+      </message>
       <message name="IDS_NTP_MODULES_HISTORY_CLUSTERS_DISABLE_TEXT" desc="A label to append to the disable text in the dropdown.">
         Journeys card
       </message>
+      <message name="IDS_NTP_MODULES_HISTORY_CLUSTERS_DONE_BUTTON" desc="A label for the done button in the dropdown.">
+        Mark as done and hide
+      </message>
       <message name="IDS_NTP_MODULES_HISTORY_CLUSTERS_OPEN_ALL_IN_NEW_TAB_GROUP_BUTTON_TEXT" desc="A label to display for the `Open all in new tab group` dropdown action.">
         Open all in new tab group
+      </message>
+      <message name="IDS_NTP_MODULES_HISTORY_CLUSTERS_SHOW_ALL_BUTTON" desc="A label for the show all button in NTP Quests Module.">
+        Open in side panel
       </message>
       <message name="IDS_ACCNAME_SHOW_ALL" desc="The accessible name for the show all button in the header of NTP Journeys Module.">
         Show all searches for <ph name="QUERY_CLUSTER_NAME">$1<ex>Office Chairs</ex></ph>
@@ -12676,22 +12691,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_MANAGE_PASSWORDS_DIFFERENT_DOMAIN_NO_PASSWORDS_TITLE" desc="The title text that is used in the manage passwords bubble when no passwords are available for a different domain.">
         No passwords saved for <ph name="ORIGIN">$1<ex>example.com</ex></ph>
       </message>
-      <message name="IDS_MANAGE_PASSWORDS_ACCOUNT_STORE_ICON_DESCRIPTION" desc="An accessibility text for images that mark passwords as stored in the user's profile.">
-        Password stored in your Brave account
-      </message>
-      <message name="IDS_MANAGE_PASSWORDS_DELETED" desc="The text that is used in the manage passwords bubble when a password is deleted.">
-        Password deleted
-      </message>
-      <message name="IDS_MANAGE_PASSWORDS_UNDO" desc="The text that is used in the manage passwords bubble when a password is deleted.">
-        Undo
-      </message>
-      <message name="IDS_MANAGE_PASSWORDS_UNDO_TOOLTIP" desc="Tooltip text for restoring a deleted password (undoing removal)">
-        Restore deleted password for <ph name="USERNAME">$1<ex>user@gmail.com</ex></ph>
-      </message>
-      <message name="IDS_MANAGE_PASSWORDS_DELETE" desc="The tooltip of a button that is used in the manage passwords bubble for removing the credential.">
-        Delete password for <ph name="USERNAME">$1<ex>user@gmail.com</ex></ph>
-      </message>
-
       <message name="IDS_MANAGE_PASSWORDS_SHOW_PASSWORD" desc="The tooltip of a button that is used in the manage pending password bubble for revealing the password.">
         Show password
       </message>
@@ -13060,7 +13059,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
           Linux apps
         </message>
         <message name="IDS_APP_LIST_BRUSCHETTA_DEFAULT_FOLDER_NAME" desc="The default name for the Bruschetta apps folder in the App Launcher">
-          Bruschetta apps
+          <ph name="VM_NAME">$1<ex>ManagedVM</ex></ph> apps
         </message>
       </if>
 
